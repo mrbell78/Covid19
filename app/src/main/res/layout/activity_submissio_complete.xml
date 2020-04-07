@@ -1,0 +1,77 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.Submissio_completeActivity">
+
+    <include layout="@layout/maintoolbar"
+        android:id="@+id/ftoolbar"
+        />
+
+    <ImageView
+        android:layout_width="150dp"
+        android:layout_height="100dp"
+        android:src="@drawable/logo"
+        android:layout_centerHorizontal="true"
+        android:layout_marginTop="50dp"
+        android:id="@+id/logoid"
+        />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="150dp"
+        android:textSize="20sp"
+        android:id="@+id/text_item"
+        android:background="@drawable/tv_bg"
+        android:paddingLeft="15dp"
+        android:layout_marginTop="10dp"
+        android:textAlignment="center"
+        android:gravity="center"
+        android:text="Your Requirements submitted successfully \n A Supplier/ Admin will contact you soon "
+        android:layout_below="@+id/logoid"
+        android:paddingRight="10dp"
+        android:textColor="@android:color/white"
+        android:layout_marginLeft="10dp"
+        android:layout_marginRight="10dp"
+        android:textStyle="bold"
+        />
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:orientation="horizontal"
+        android:layout_below="@+id/text_item"
+        android:layout_marginTop="15dp"
+        android:paddingRight="10dp"
+        android:weightSum="2">
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@android:color/white"
+            android:text="Add New"
+            android:textAllCaps="false"
+            android:background="#2739A1"
+            android:id="@+id/btn_addnew"
+            android:layout_marginLeft="8dp"
+            />
+
+        <Button
+            android:layout_width="0dp"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:textColor="@android:color/white"
+            android:text="View List"
+            android:textAllCaps="false"
+            android:background="@color/colorPrimary"
+            android:id="@+id/btn_viewlist"
+            android:layout_marginLeft="10dp"
+            android:layout_marginRight="8dp"
+            />
+
+    </LinearLayout>
+
+</RelativeLayout>

@@ -9,11 +9,17 @@ import android.os.Bundle;
 import android.os.Parcelable;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
+import android.view.animation.TranslateAnimation;
 import android.widget.Button;
 import android.widget.CheckBox;
 import android.widget.EditText;
+import android.widget.LinearLayout;
+import android.widget.RelativeLayout;
+import android.widget.TextView;
 import android.widget.Toast;
 
 import com.criddam.covid_19criddam.R;
@@ -27,6 +33,8 @@ public class SupplierActivity extends AppCompatActivity  {
     CheckBox mask,ppe,medicne,equipment,Hand ,saitizer;
     EditText edt_other;
 
+    TextView tv_otherclik;
+
     String suplyablelist="";
     String supplyneed=null ;
 
@@ -34,6 +42,8 @@ public class SupplierActivity extends AppCompatActivity  {
     private static final String TAG = "SupplierActivity";
 
     Toolbar mToolbaar;
+
+    LinearLayout llayoutother;
 
   /*  SharedPreferences pref = getApplicationContext().getSharedPreferences("suplyPref", 0); // 0 - for private mode
     SharedPreferences.Editor editor = pref.edit();*/
@@ -51,21 +61,47 @@ public class SupplierActivity extends AppCompatActivity  {
         edt_other=findViewById(R.id.edt_supply_other);
 
         mToolbaar=findViewById(R.id.toolbar);
+        llayoutother=findViewById(R.id.supply_other);
 
         setSupportActionBar(mToolbaar);
-        getSupportActionBar().setTitle("Welcome to COVID-19 CRID DAM");
+        getSupportActionBar().setTitle("COVID-19 CRID DAM");
 
         mask=findViewById(R.id.chmask);
         ppe=findViewById(R.id.chPPE);
         equipment=findViewById(R.id.mequipment);
         saitizer= findViewById(R.id.senitaizer);
         medicne=findViewById(R.id.medine);
+        tv_otherclik=findViewById(R.id.tv_otherclik);
 
 
 
         itemlist=new ArrayList<>();
 
 
+        tv_otherclik.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
+
+
+
+                LinearLayout.LayoutParams params = new LinearLayout.LayoutParams(
+                        LinearLayout.LayoutParams.MATCH_PARENT,200
+
+
+                );
+
+                params.setMargins(30,8,30,0);
+
+
+                edt_other.setLayoutParams(params);
+
+                edt_other.setVisibility(View.VISIBLE);
+                TranslateAnimation animation = new TranslateAnimation(0,0,llayoutother.getHeight(),0);
+                animation.setDuration(100);
+                edt_other.startAnimation(animation);
+
+            }
+        });
 
         btn_next.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -132,6 +168,50 @@ public class SupplierActivity extends AppCompatActivity  {
 
 
     }
+
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        //MenuInflater inflater = getMenuInflater();
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+
+        switch (item.getItemId()){
+            case R.id.logout:
+                logout();
+                return true;
+
+            default:
+                return false;
+        }
+
+    }
+
+    private void logout() {
+
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
+        SharedPreferences.Editor editor = pref.edit();
+        editor.putString("userexistancy", "null"); // Storing string
+        editor.putString("mobile",null);
+        editor.putString("password",null);
+        editor.putString("type",null);
+        editor.commit();
+        startActivity(new Intent(getApplicationContext(),SplashActivity.class));
+        finish();
+
+    }
+
+
 
 
 }

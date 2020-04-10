@@ -17,6 +17,8 @@ import com.criddam.covid_19criddam.R;
 public class DoctorEmergencyActivity extends AppCompatActivity {
     Button btn_next,btn_previous;
     EditText edt_time;
+    String type;
+     String value;
 
     Toolbar mToolbaar;
     @Override
@@ -33,8 +35,8 @@ public class DoctorEmergencyActivity extends AppCompatActivity {
         edt_time=findViewById(R.id.edt_stime);
 
         Intent intent = getIntent();
-        final String value = intent.getStringExtra("docneed");
-        String type = intent.getStringExtra("type");
+         value = intent.getStringExtra("docneed");
+        type = intent.getStringExtra("type");
 
 
 
@@ -42,9 +44,11 @@ public class DoctorEmergencyActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(!TextUtils.isEmpty(edt_time.getText().toString())){
-                    startActivity(new Intent(getApplicationContext(),SigninActivity.class).putExtra("supply",value).
+                    startActivity(new Intent(getApplicationContext(),SigninActivity.class).putExtra("docneed",value).
                             putExtra("emergency",edt_time.getText().toString()
-                    ));
+                    ).putExtra("type",type)
+
+                    );
                     finish();
                 }else{
                     edt_time.setError("Please mention your urgency here");

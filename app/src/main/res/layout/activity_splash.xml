@@ -84,15 +84,7 @@
             android:textSize="18sp"
             android:id="@+id/supplier"
             />
-        <RadioButton
-            android:layout_width="wrap_content"
-            android:layout_height="wrap_content"
-            android:text="Volunteer"
-            android:textStyle="normal"
-            android:textSize="18sp"
-            android:id="@+id/volunteer"
-            android:enabled="false"
-            />
+
 
     </RadioGroup>
 </RelativeLayout>

@@ -4,6 +4,7 @@ import androidx.appcompat.app.AlertDialog;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.os.Bundle;
@@ -20,8 +21,13 @@ import com.criddam.covid_19criddam.apicalling.Api_covid;
 import com.criddam.covid_19criddam.model.Post;
 import com.criddam.covid_19criddam.model.Post_supply;
 
+import org.json.JSONException;
+import org.json.JSONObject;
+
+import java.io.IOException;
 import java.util.ArrayList;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -38,6 +44,7 @@ public class ResistrationSupplierActivity extends AppCompatActivity {
     String value_cn;
     String sptime;
     String othersupply;
+    ProgressDialog mdialog;
 
     private static final String TAG = "ResistrationSupplierAct";
 
@@ -66,6 +73,10 @@ public class ResistrationSupplierActivity extends AppCompatActivity {
         sptime = intent.getStringExtra("time");
         othersupply = intent.getStringExtra("othersply");
 
+        mdialog= new ProgressDialog(this);
+        mdialog.setTitle("Create Account");
+        mdialog.setMessage("Please wait....");
+
 
 
         btn_submit.setOnClickListener(new View.OnClickListener() {
@@ -88,11 +99,8 @@ public class ResistrationSupplierActivity extends AppCompatActivity {
                     api = retrofit.create(Api_covid.class);
                     createPost("supplier",edt_name.getText().toString(),edt_mobile.getText().toString(),edt_email.getText().toString(),value_cn,sptime,
                             edt_password.getText().toString(),edt_location.getText().toString(),othersupply);
+                    mdialog.show();
 
-                    Toast.makeText(ResistrationSupplierActivity.this, value_cn, Toast.LENGTH_SHORT).show();
-                    Toast.makeText(ResistrationSupplierActivity.this, sptime, Toast.LENGTH_SHORT).show();
-                    startActivity(new Intent(getApplicationContext(),Submissio_completeActivity.class).putExtra("identify","sp"));
-                    finish();
                 }
 
                 else if(TextUtils.isEmpty(edt_name.getText().toString())){
@@ -138,27 +146,56 @@ public class ResistrationSupplierActivity extends AppCompatActivity {
 
 
         Post_supply response = new Post_supply(supplyer,name,mobile,email,value_cn, sptime,password,location,othersupply);
-        Call<Post_supply> call = api.createPost_supply(supplyer,name,mobile,email,value_cn, sptime,password,location,othersupply);
+        Call<ResponseBody> call = api.createPost_supply(supplyer,name,mobile,email,value_cn, sptime,password,location,othersupply);
 
-        call.enqueue(new Callback<Post_supply>() {
+        call.enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<Post_supply> call, Response<Post_supply> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
                 if(!response.isSuccessful()){
                     Log.d(TAG, "onResponse: ..............unSuccessful "+response.code());
+                    mdialog.dismiss();
+                    Toast.makeText(ResistrationSupplierActivity.this, "server error", Toast.LENGTH_SHORT).show();
+
+                }
+                String s =null;
+                try {
+
+
+                    s = response.body().string();
+                    Log.d(TAG, "onResponse: .................resposne by serveer "+ s);
+                    Log.d(TAG, "onResponse: .................resposne by serveer code "+ response.code());
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
 
-                Post_supply supply = response.body();
 
-                Log.d(TAG, "onResponse: .........successful "+ response.code());
-                Log.d(TAG, "onResponse: .....................data retrive "+ supply.getEmail());
+                if (s != null) {
+                    try {
+                        JSONObject jsonObject = new JSONObject(s);
+
+                        String status = jsonObject.getString("msg");
+                        if (status.equals("Mobile number 01762957422 already exists in server.")) {
+                            mdialog.dismiss();
+                            Toast.makeText(ResistrationSupplierActivity.this, "Mobile number 01762957422 already exists in server.", Toast.LENGTH_SHORT).show();
+                            edt_mobile.setError("User exist");
+                        } else {
+                            mdialog.dismiss();
+                            Toast.makeText(ResistrationSupplierActivity.this, "Data saved successfully", Toast.LENGTH_SHORT).show();
+                            startActivity(new Intent(getApplicationContext(),Submissio_completeActivity.class).putExtra("type","supplier").putExtra("mobile",mobile));
+                            finish();
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
             }
 
             @Override
-            public void onFailure(Call<Post_supply> call, Throwable t) {
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
 
             }
         });
-
 
 
     }

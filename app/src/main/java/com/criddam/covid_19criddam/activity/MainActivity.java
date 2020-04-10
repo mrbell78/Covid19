@@ -9,6 +9,8 @@ import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.Window;
 import android.view.WindowManager;
@@ -26,6 +28,7 @@ public class MainActivity extends AppCompatActivity {
     TextView edtitemtext,forwho;
     Toolbar mToolbaar;
     EditText edt_item;
+    String type ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -45,9 +48,11 @@ public class MainActivity extends AppCompatActivity {
         mToolbaar=findViewById(R.id.toolbar);
 
         setSupportActionBar(mToolbaar);
-        getSupportActionBar().setTitle("Welcome to COVID-19 CRID DAM");
+        getSupportActionBar().setTitle("COVID-19 CRID DAM");
 
 
+        Intent i  = getIntent();
+        type = i.getStringExtra("doc");
 
 
 
@@ -55,7 +60,7 @@ public class MainActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                 if(!TextUtils.isEmpty(edt_item.getText().toString())){
-                    startActivity(new Intent(getApplicationContext(),DoctorEmergencyActivity.class).putExtra("docneed",edt_item.getText().toString()).putExtra("type","doc/patient"));
+                    startActivity(new Intent(getApplicationContext(),DoctorEmergencyActivity.class).putExtra("docneed",edt_item.getText().toString()).putExtra("type",type));
 
 
 
@@ -74,6 +79,50 @@ public class MainActivity extends AppCompatActivity {
             }
         });
 
+
+    }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        //MenuInflater inflater = getMenuInflater();
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+
+        switch (item.getItemId()){
+            case R.id.logout:
+                logout();
+                return true;
+
+            default:
+                return false;
+
+        }
+
+    }
+
+    private void logout() {
+
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putString("userexistancy", "null"); // Storing string
+        editor.putString("mobile",null);
+        editor.putString("password",null);
+        editor.putString("type",null);
+        editor.commit();
+
+
+        startActivity(new Intent(getApplicationContext(),SplashActivity.class));
+        finish();
 
     }
 }

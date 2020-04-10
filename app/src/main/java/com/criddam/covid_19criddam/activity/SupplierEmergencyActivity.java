@@ -46,14 +46,13 @@ public class SupplierEmergencyActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
                if(!TextUtils.isEmpty(edt_time.getText().toString())){
-                   Toast.makeText(SupplierEmergencyActivity.this, value, Toast.LENGTH_SHORT).show();
-                   startActivity(new Intent(getApplicationContext(),ResistrationSupplierActivity.class).putExtra("sp_need",value)
+
+                   startActivity(new Intent(getApplicationContext(),SignsuppliActivity.class).putExtra("sp_need",value)
                            .putExtra("time",edt_time.getText().toString()).putExtra("othersply",other));
                    finish();
                }else{
                    edt_time.setError("Please mention your urgency ");
-                   Toast.makeText(SupplierEmergencyActivity.this, "Please mention your urgency here", Toast.LENGTH_SHORT).show();
-               }
+                   }
         }
         });
 

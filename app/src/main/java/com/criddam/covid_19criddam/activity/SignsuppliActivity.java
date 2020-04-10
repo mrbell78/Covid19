@@ -19,7 +19,6 @@ import android.widget.Toast;
 import com.criddam.covid_19criddam.R;
 import com.criddam.covid_19criddam.apicalling.Api_covid;
 import com.criddam.covid_19criddam.model.Data;
-import com.criddam.covid_19criddam.model.Post;
 import com.criddam.covid_19criddam.model.Responseclass;
 import com.criddam.covid_19criddam.model.Signin;
 
@@ -38,7 +37,8 @@ import retrofit2.Retrofit;
 import retrofit2.converter.gson.GsonConverterFactory;
 import retrofit2.http.Field;
 
-public class SigninActivity extends AppCompatActivity {
+public class SignsuppliActivity extends AppCompatActivity {
+
 
     TextView tv_clickreg;
     String type,docneed,emergencyfordoc;
@@ -70,7 +70,9 @@ public class SigninActivity extends AppCompatActivity {
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.activity_signin);
+        setContentView(R.layout.activity_signsuppli);
+
+
 
         tv_clickreg=findViewById(R.id.clikforreg);
         btn_sumbit=findViewById(R.id.signin);
@@ -98,40 +100,42 @@ public class SigninActivity extends AppCompatActivity {
         mdilaog.setMessage("Please wait");
 
 
-        Log.d(TAG, "onCreate: ..............usertype chekck "+ type);
 
-      cv.setOnClickListener(new View.OnClickListener() {
-          @Override
-          public void onClick(View v) {
+        cv.setOnClickListener(new View.OnClickListener() {
+            @Override
+            public void onClick(View v) {
 
 
-              if(cv.isChecked() ){
+                if(cv.isChecked() ){
 
-                  if( !TextUtils.isEmpty(edt_mobile.getText().toString() )
-                          && !TextUtils.isEmpty(edt_password.getText().toString())){
+                    if( !TextUtils.isEmpty(edt_mobile.getText().toString() )
+                            && !TextUtils.isEmpty(edt_password.getText().toString())){
 
-                      pref = SigninActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
-                      editor = pref.edit();
-                      editor.putString("mobile",edt_mobile.getText().toString()); // Storing string
-                      editor.putString("password",edt_password.getText().toString());
-                      editor.commit();
+                        pref = SignsuppliActivity.this.getSharedPreferences("suppref", 0); // 0 - for private mode
+                        editor = pref.edit();
+                        editor.putString("mobile",edt_mobile.getText().toString()); // Storing string
+                        editor.putString("password",edt_password.getText().toString());
+                        editor.commit();
 
-                      Toast.makeText(SigninActivity.this, "Remembered", Toast.LENGTH_SHORT).show();
-                  }
-
+                        Toast.makeText(SignsuppliActivity.this, "save sucess", Toast.LENGTH_SHORT).show();
+                    }
 
 
 
-              }
+
+                }
 
 
-          }
-      });
+            }
+        });
 
-        pref = SigninActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+
+
+
+        pref = SignsuppliActivity.this.getSharedPreferences("suppref", 0); // 0 - for private mode
         editor = pref.edit();
-         mb = pref.getString("mobile", null);
-         pass = pref.getString("password", null);
+        mb = pref.getString("mobile", null);
+        pass = pref.getString("password", null);
         type_dp=pref.getString("type",null);
         Log.d(TAG, "onCreate: ........................... value "+ mb);
 
@@ -149,9 +153,10 @@ public class SigninActivity extends AppCompatActivity {
             signIn(mb,pass);
             mdilaog.show();
 
+        }else {
+
+            Toast.makeText(this, "some thing is null", Toast.LENGTH_SHORT).show();
         }
-
-
 
 
 
@@ -159,19 +164,27 @@ public class SigninActivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                startActivity(new Intent(getApplicationContext(),RegistrationActivity.class).putExtra("type",type)
-                        .putExtra("docneed",docneed).putExtra("emergency",emergencyfordoc)
+                if(supplyitem!=null || othersupply!=null){
 
-                );
+                    startActivity(new Intent(getApplicationContext(),ResistrationSupplierActivity.class)
+                            .putExtra("sp_need",supplyitem).putExtra("time",emergencyforsupply)
+                            .putExtra("othersply",othersupply)
+
+                    );
+
                 }
+            }
         });
+
+
+
 
         btn_sumbit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
                 if(!TextUtils.isEmpty(edt_mobile.getText().toString()) && !TextUtils.isEmpty(edt_password.getText()
-                .toString()
+                        .toString()
                 )){
 
                     Retrofit retrofit  = new Retrofit.Builder()
@@ -192,7 +205,13 @@ public class SigninActivity extends AppCompatActivity {
                 }
             }
         });
+
+
     }
+
+
+
+
 
     private void signIn(String mobile,String password) {
 
@@ -241,24 +260,27 @@ public class SigninActivity extends AppCompatActivity {
                         if(success.equals("Login Successfull!")){
 
 
-                            Log.d(TAG, "onResponse: ...............user must check "+ type);
-                            Toast.makeText(SigninActivity.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
 
-                            pref = SigninActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+
+
+
+                            Toast.makeText(SignsuppliActivity.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
+
+                            pref = SignsuppliActivity.this.getSharedPreferences("suppref", 0); // 0 - for private mode
                             editor = pref.edit();
-                            editor.putString("userexistancy", "userexist"+type); // Storing string
+                            editor.putString("userexistancy", "userexist_supplier"); // Storing string
                             editor.commit();
 
                             getdata(mobile);
 
                             //mdilaog.dismiss();
 
-                           // retrivedata(mobile);
+                            // retrivedata(mobile);
                             //pusdata(docneed,emergencyfordoc);
 
                         }else {
                             mdilaog.dismiss();
-                            Toast.makeText(SigninActivity.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
+                            Toast.makeText(SignsuppliActivity.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
                             edt_mobile.setError("Error");
                             edt_password.setError("Error");
                         }
@@ -278,6 +300,9 @@ public class SigninActivity extends AppCompatActivity {
             }
         });
     }
+
+
+
 
     private void getdata(String mobile) {
 
@@ -322,15 +347,15 @@ public class SigninActivity extends AppCompatActivity {
 
                 if( mobile!=null){
 
-                    insertdata(usertype,name,mobile,email,docneed,emergencyfordoc,password,hospital,
+                    insertdata(usertype,name,mobile,email,supplyitem,emergencyforsupply,password,
 
-                            location
+                            location,othersupply
                     );
 
 
                     Log.d(TAG, "onResponse: .................inserdata() method is called "+ mobile);
                 }else {
-                    Toast.makeText(SigninActivity.this, "inner class null", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignsuppliActivity.this, "inner class null", Toast.LENGTH_SHORT).show();
                 }
 
             }
@@ -348,7 +373,9 @@ public class SigninActivity extends AppCompatActivity {
 
     }
 
-    private void insertdata(String usertype, String fullname, String mobile, String email, String what_u_need,String how_soon_do_u_need_it, String password, String hospital, String location) {
+
+
+    private void insertdata(String usertype, String fullname, String mobile, String email, String supplyitem,String emergencyforsupply, String password, String location,String othersupply) {
 
         Api_covid apinew;
         Retrofit retrofit  = new Retrofit.Builder()
@@ -356,10 +383,14 @@ public class SigninActivity extends AppCompatActivity {
                 .addConverterFactory(GsonConverterFactory.create())
                 .build();
 
-                apinew= retrofit.create(Api_covid.class);
+        apinew= retrofit.create(Api_covid.class);
 
 
-        Call<ResponseBody> call = apinew.createPost(usertype, fullname, mobile, email, what_u_need, how_soon_do_u_need_it, password, hospital, location);
+        Call<ResponseBody> call = apinew.createPost_supply(usertype, fullname, mobile,
+                email, supplyitem, emergencyforsupply, password,  location,othersupply
+        );
+
+
 
 
         call.enqueue(new Callback<ResponseBody>() {
@@ -372,17 +403,17 @@ public class SigninActivity extends AppCompatActivity {
                 if (!response.isSuccessful()) {
                     Log.d(TAG, "onResponse: ..............unSuccessful " + response.code());
                     mdilaog.dismiss();
-                    Toast.makeText(SigninActivity.this, "server error", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(SignsuppliActivity.this, "server error", Toast.LENGTH_SHORT).show();
                 }
 
 
-                Toast.makeText(SigninActivity.this, "data update successfully", Toast.LENGTH_SHORT).show();
+                Toast.makeText(SignsuppliActivity.this, "data update successfully", Toast.LENGTH_SHORT).show();
 
                 try {
                     s = response.body().string();
 
                     mdilaog.dismiss();
-                    startActivity(new Intent(getApplicationContext(),Submissio_completeActivity.class).putExtra("type","Doctor").putExtra("mobile",mobile));
+                    startActivity(new Intent(getApplicationContext(),Submissio_completeActivity.class).putExtra("type","supplier").putExtra("mobile",mobile));
 
                     Log.d(TAG, "onResponse: .................resposne by serveer code in singn in method  " + response.code());
                     Log.d(TAG, "onResponse: .................resposne by serveer code in singn in method  response body " + s);
@@ -392,11 +423,6 @@ public class SigninActivity extends AppCompatActivity {
                     e.printStackTrace();
                 }
 
-
-
-
-
-
             }
 
             @Override
@@ -405,8 +431,4 @@ public class SigninActivity extends AppCompatActivity {
             }
         });
     }
-
-
-
-
 }

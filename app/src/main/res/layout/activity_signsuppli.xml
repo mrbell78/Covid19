@@ -6,11 +6,11 @@
     android:layout_height="match_parent"
     android:orientation="vertical"
     android:id="@+id/lparentlayout"
+    tools:context=".activity.SignsuppliActivity">
 
-    tools:context=".activity.SigninActivity">
 
-    <include layout="@layout/maintoolbar"
-        />
+    include layout="@layout/maintoolbar"
+    />
 
     <ImageView
         android:layout_width="150dp"

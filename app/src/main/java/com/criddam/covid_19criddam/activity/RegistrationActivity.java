@@ -8,6 +8,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Editable;
@@ -20,6 +21,7 @@ import android.view.WindowManager;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 import android.widget.SimpleAdapter;
 import android.widget.Toast;
 
@@ -37,7 +39,9 @@ import com.google.android.libraries.places.widget.AutocompleteActivity;
 import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
 import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
 import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+import com.google.gson.JsonObject;
 
+import org.json.JSONException;
 import org.json.JSONObject;
 
 import java.io.BufferedReader;
@@ -52,6 +56,7 @@ import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 
+import okhttp3.ResponseBody;
 import retrofit2.Call;
 import retrofit2.Callback;
 import retrofit2.Response;
@@ -67,12 +72,19 @@ public class RegistrationActivity extends AppCompatActivity {
     Api_covid api_covid;
     /*PlacesTask placesTask;
     PlacesTask.ParserTask parserTask;*/
-    String docneed,docemergency;
+    String docneed,docemergency,type;
     ProgressDialog mdialog;
+    boolean status_glb= false;
+    RadioButton btn_radio;
+    DatabaseHelper db;
 
     String apiKey ="AIzaSyAtW128tmvUvIxGGrfDSK-Fy0_DRyStGoI";
     private static final String TAG = "RegistrationActivity";
     public static final int AUTOCOMPLETE_REQUEST_CODE=100;
+
+    String usertypeglobal=null;
+    SharedPreferences pref ;
+    SharedPreferences.Editor editor ;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -92,7 +104,18 @@ public class RegistrationActivity extends AppCompatActivity {
         edt_hospital = findViewById(R.id.hospital);
         edt_location = findViewById(R.id.location);
         edt_password=findViewById(R.id.password_doc);
+        btn_radio=findViewById(R.id.btn_radio);
 
+
+        pref = RegistrationActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+        editor = pref.edit();
+        usertypeglobal = pref.getString("type", null);
+
+        db=new DatabaseHelper(this);
+
+        mdialog=new ProgressDialog(this);
+        mdialog.setTitle("Create Account");
+        mdialog.setMessage("Please wait");
 
 
 
@@ -104,8 +127,14 @@ public class RegistrationActivity extends AppCompatActivity {
 
 
         Intent intent = getIntent();
-         docneed = intent.getStringExtra("supply");
+         docneed = intent.getStringExtra("docneed");
         docemergency  = intent.getStringExtra("emergency");
+        type= intent.getStringExtra("type");
+
+       if(type!=null){
+           btn_radio.setChecked(true);
+           btn_radio.setText(type);
+       }
 
         btn_submit.setOnClickListener(new View.OnClickListener() {
             @Override
@@ -120,30 +149,25 @@ public class RegistrationActivity extends AppCompatActivity {
                         && !TextUtils.isEmpty(edt_email.getText().toString())
                         && docneed!=null
                         && docemergency!=null
+                        && usertypeglobal!=null
 
                 ) {
-
 
                     Retrofit retrofit  = new Retrofit.Builder()
                             .baseUrl("http://sales.criddam.com/api/")
                             .addConverterFactory(GsonConverterFactory.create())
                             .build();
 
-
+                    Toast.makeText(RegistrationActivity.this, "user type "+ type, Toast.LENGTH_SHORT).show();
                     api_covid = retrofit.create(Api_covid.class);
-                    createPost("doctor",edt_name.getText().toString(),edt_mobile.getText().toString(),edt_email.getText().toString(),docneed,docemergency,
+                    createPost(usertypeglobal,edt_name.getText().toString(),edt_mobile.getText().toString(),edt_email.getText().toString(),docneed,docemergency,
                             edt_password.getText().toString(),edt_hospital.getText().toString(),edt_location.getText().toString()
                             );
 
-
-                    startActivity(new Intent(getApplicationContext(), Submissio_completeActivity.class).putExtra("identify", "doctor_p"));
-
-
-                    Toast.makeText(RegistrationActivity.this, docneed, Toast.LENGTH_SHORT).show();
-                    Toast.makeText(RegistrationActivity.this, docemergency, Toast.LENGTH_SHORT).show();
+                   mdialog.show();
 
 
-                    finish();
+
                 } else if (TextUtils.isEmpty(edt_name.getText().toString())) {
                     edt_name.setError("You must have to fill up this filed");
                     Toast.makeText(RegistrationActivity.this, "filed is missing ", Toast.LENGTH_SHORT).show();
@@ -189,213 +213,77 @@ public class RegistrationActivity extends AppCompatActivity {
     }
 
 
-    /*private class PlacesTask extends AsyncTask<String, Void, String> {
 
-        @Override
-        protected String doInBackground(String... place) {
-            // For storing data from web service
-            String data = "";
-
-            // Obtain browser key from https://code.google.com/apis/console
-            String key = "key=AIzaSyBB5KBkuA4-qm8QxaXX8FhHqhHsESMdAzI";
-
-            String input = "";
-
-            try {
-                input = "input=" + URLEncoder.encode(place[0], "utf-8");
-            } catch (UnsupportedEncodingException e1) {
-                e1.printStackTrace();
-            }
-
-            // place type to be searched
-            String types = "types=geocode";
-
-            // Sensor enabled
-            String sensor = "sensor=false";
-
-            // Building the parameters to the web service
-            String parameters = input + "&" + types + "&" + sensor + "&" + key;
-
-            // Output format
-            String output = "json";
-
-            // Building the url to the web service
-            String url = "https://maps.googleapis.com/maps/api/place/autocomplete/" + output + "?" + parameters;
-
-            try {
-                // Fetching the data from we service
-                data = downloadUrl(url);
-            } catch (Exception e) {
-                Log.d("Background Task", e.toString());
-            }
-            return data;
-        }
-
-        @Override
-        protected void onPostExecute(String result) {
-            super.onPostExecute(result);
-
-            // Creating ParserTask
-            parserTask = new ParserTask();
-
-            // Starting Parsing the JSON string returned by Web Service
-            parserTask.execute(result);
-        }
-
-        private class ParserTask extends AsyncTask<String, Integer, List<HashMap<String, String>>> {
-
-            JSONObject jObject;
-            private static final String TAG = "ParserTask";
-
-            @Override
-            protected List<HashMap<String, String>> doInBackground(String... jsonData) {
-
-                List<HashMap<String, String>> places = null;
-
-                PlaceJSONParser placeJsonParser = new PlaceJSONParser();
-
-                try {
-                    jObject = new JSONObject(jsonData[0]);
-
-                    // Getting the parsed data as a List construct
-                    places = placeJsonParser.parse(jObject);
-
-                } catch (Exception e) {
-                    Log.d("Exception", e.toString());
-                }
-                return places;
-            }
-
-            @Override
-            protected void onPostExecute(List<HashMap<String, String>> result) {
-
-                String[] from = new String[]{"description"};
-                int[] to = new int[]{android.R.id.text1};
-
-                // Creating a SimpleAdapter for the AutoCompleteTextView
-                SimpleAdapter adapter = new SimpleAdapter(getApplicationContext(), result, android.R.layout.simple_list_item_1, from, to);
-
-                // Setting the adapter
-                location.setAdapter(adapter);
-            }
-        }
-
-
-        private String downloadUrl(String strUrl) throws IOException {
-            String data = "";
-            InputStream iStream = null;
-            HttpURLConnection urlConnection = null;
-            try {
-                URL url = new URL(strUrl);
-
-                // Creating an http connection to communicate with url
-                urlConnection = (HttpURLConnection) url.openConnection();
-
-                // Connecting to url
-                urlConnection.connect();
-
-                // Reading data from url
-                iStream = urlConnection.getInputStream();
-
-                BufferedReader br = new BufferedReader(new InputStreamReader(iStream));
-
-                StringBuilder sb = new StringBuilder();
-
-                String line = "";
-                while ((line = br.readLine()) != null) {
-                    sb.append(line);
-                }
-
-                data = sb.toString();
-
-                br.close();
-
-            } catch (Exception e) {
-                Log.d("Exception  url", e.toString());
-            } finally {
-                iStream.close();
-                urlConnection.disconnect();
-            }
-            return data;
-        }
-    }*/
-
-
-    public void onSearchCalled() {
-        // Set the fields to specify which types of place data to return.
-        List<Place.Field> fields = Arrays.asList(Place.Field.ID, Place.Field.NAME, Place.Field.ADDRESS, Place.Field.LAT_LNG);
-        // Start the autocomplete intent.
-        Intent intent = new Autocomplete.IntentBuilder(
-                AutocompleteActivityMode.FULLSCREEN, fields).setCountry("BN") //NIGERIA
-                .build(this);
-        startActivityForResult(intent, AUTOCOMPLETE_REQUEST_CODE);
-    }
-
-
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, @Nullable Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
-        if (requestCode == AUTOCOMPLETE_REQUEST_CODE) {
-            if (resultCode == RESULT_OK) {
-                Place place = Autocomplete.getPlaceFromIntent(data);
-                Log.i(TAG, "Place: " + place.getName() + ", " + place.getId() + ", " + place.getAddress());
-                Toast.makeText(RegistrationActivity.this, "ID: " + place.getId() + "address:" + place.getAddress() + "Name:" + place.getName() + " latlong: " + place.getLatLng(), Toast.LENGTH_LONG).show();
-                String address = place.getAddress();
-                // do query with address
-
-               /// location.setText(address);
-
-            } else if (resultCode == AutocompleteActivity.RESULT_ERROR) {
-                // TODO: Handle the error.
-                Status status = Autocomplete.getStatusFromIntent(data);
-                Toast.makeText(RegistrationActivity.this, "Error: " + status.getStatusMessage(), Toast.LENGTH_LONG).show();
-                Log.i(TAG, status.getStatusMessage());
-            } else if (resultCode == RESULT_CANCELED) {
-                // The user canceled the operation.
-            }
-        }
-    }
 
 
     private void createPost(String usertype,String name,String mobile,String email,String what_u_need,String how_soon_do_u_need_it,String password,String hospital,String location) {
 
-        Post postresponsee = new Post(usertype,name,mobile,email,what_u_need, how_soon_do_u_need_it,password,hospital,location);
+        Call<ResponseBody> call = api_covid.createPost(usertype, name, mobile, email, what_u_need, how_soon_do_u_need_it, password, hospital, location);
 
-        Call<Post> call = api_covid.newPost(postresponsee);
 
-        //Call<Post> call = api_covid.createPost(usertype,name,mobile,email,what_u_need, how_soon_do_u_need_it,password,hospital,location);
-
-        call.enqueue(new Callback<Post>() {
+        call.enqueue(new Callback<ResponseBody>() {
             @Override
-            public void onResponse(Call<Post> call, Response<Post> response) {
+            public void onResponse(Call<ResponseBody> call, Response<ResponseBody> response) {
 
-                if(!response.isSuccessful()){
-                    Log.d(TAG, "onResponse: ..............unSuccessful "+response.code());
+                String s = null;
+                if (!response.isSuccessful()) {
+                    Log.d(TAG, "onResponse: ..............unSuccessful " + response.code());
+                    mdialog.dismiss();
+                    Toast.makeText(RegistrationActivity.this, "server error", Toast.LENGTH_SHORT).show();
                 }
 
-                Post postrespone = response.body();
 
-                Log.d(TAG, "onResponse: .........successful "+ response.code());
-                Log.d(TAG, "onResponse: .....................data retrive "+ postresponsee.getWhat_u_need());
+                try {
 
-                DatabaseHelper db = new DatabaseHelper(RegistrationActivity.this);
+                    s = response.body().string();
 
-                if(db.insert(postresponsee.getWhat_u_need(),postresponsee.getLocation())){
-                    Toast.makeText(RegistrationActivity.this, "data upload succesfully", Toast.LENGTH_SHORT).show();
+                    Log.d(TAG, "onResponse: .................resposne by serveer " + s);
+                    Log.d(TAG, "onResponse: .................resposne by serveer code " + response.code());
 
-                }else {
-                    Toast.makeText(RegistrationActivity.this, "data upload failed", Toast.LENGTH_SHORT).show();
+
+                } catch (IOException e) {
+                    e.printStackTrace();
                 }
+
+                if (s != null) {
+                    try {
+                        JSONObject jsonObject = new JSONObject(s);
+
+                        String status = jsonObject.getString("msg");
+                        if (status.equals("Mobile number 01762957422 already exists in server.")) {
+                            mdialog.dismiss();
+                            Toast.makeText(RegistrationActivity.this, "Mobile number 01762957422 already exists in server.", Toast.LENGTH_SHORT).show();
+                            edt_mobile.setError("User exist");
+                        } else {
+
+
+
+
+                                mdialog.dismiss();
+                                Toast.makeText(RegistrationActivity.this, "Data saved successfully", Toast.LENGTH_SHORT).show();
+                                startActivity(new Intent(getApplicationContext(), Submissio_completeActivity.class).putExtra("type", "Doctor").putExtra("mobile",mobile));
+                                finish();
+                                Log.d(TAG, "onClick: ........................status glb "+status_glb);
+
+
+
+
+                        }
+
+                    } catch (JSONException e) {
+                        e.printStackTrace();
+                    }
+                }
+
 
             }
 
             @Override
-            public void onFailure(Call<Post> call, Throwable t) {
-
-                Log.d(TAG, "onFailure: ...........error " + t.getMessage());
+            public void onFailure(Call<ResponseBody> call, Throwable t) {
 
             }
         });
+
 
     }
 }

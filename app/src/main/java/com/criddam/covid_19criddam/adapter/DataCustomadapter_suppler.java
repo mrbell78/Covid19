@@ -15,29 +15,29 @@ import com.criddam.covid_19criddam.model.Data;
 
 import java.util.List;
 
-public class DataCustomdapter extends RecyclerView.Adapter<DataCustomdapter.Customclass> {
+public class DataCustomadapter_suppler extends RecyclerView.Adapter<DataCustomadapter_suppler.Customclass> {
 
-   Context context;
-   List<Data> dataList;
+    Context context;
+    List<Data> dataList;
 
-    public DataCustomdapter(Context context, List<Data> dataList) {
+    public DataCustomadapter_suppler(Context context, List<Data> dataList) {
         this.context = context;
         this.dataList = dataList;
     }
 
     @NonNull
     @Override
-    public Customclass onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
+    public DataCustomadapter_suppler.Customclass onCreateViewHolder(@NonNull ViewGroup parent, int viewType) {
 
         View view = LayoutInflater.from(context).inflate(R.layout.itemview,parent,false);
 
-        return new Customclass(view);
+        return new DataCustomadapter_suppler.Customclass(view);
     }
 
     @Override
-    public void onBindViewHolder(@NonNull Customclass holder, int position) {
+    public void onBindViewHolder(@NonNull DataCustomadapter_suppler.Customclass holder, int position) {
 
-        holder.tv_need.setText(dataList.get(position).getWhat_u_need());
+        holder.tv_need.setText(dataList.get(position).getWhat_u_supply());
 
     }
 

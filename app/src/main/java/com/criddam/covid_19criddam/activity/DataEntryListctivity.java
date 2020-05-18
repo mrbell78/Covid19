@@ -1,14 +1,18 @@
 package com.criddam.covid_19criddam.activity;
 
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.appcompat.widget.Toolbar;
 import androidx.recyclerview.widget.LinearLayoutManager;
 import androidx.recyclerview.widget.RecyclerView;
 
+import android.app.ProgressDialog;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.database.Cursor;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.Toast;
@@ -39,11 +43,15 @@ public class DataEntryListctivity extends AppCompatActivity {
     Button btn_addnew;
     String value=null;
     String mobile=null;
+    String mobilegolbal= null;
 
     SharedPreferences pref ;
     SharedPreferences.Editor editor ;
     String type_dp=null;
     String usertypeglobal=null;
+    Toolbar mToolbar;
+
+    ProgressDialog mDialog;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -57,6 +65,13 @@ public class DataEntryListctivity extends AppCompatActivity {
         btn_addnew=findViewById(R.id.addnew);
 
         listdata= new ArrayList<>();
+        mToolbar=findViewById(R.id.toolbar);
+        setSupportActionBar(mToolbar);
+        getSupportActionBar().setTitle("COVID-19 CRID DAM");
+        mDialog=new ProgressDialog(this);
+
+        mDialog.setTitle("Loading");
+        mDialog.setMessage("Please Wait....");
 
 
         Intent intent = getIntent();
@@ -65,18 +80,27 @@ public class DataEntryListctivity extends AppCompatActivity {
          mobile=intent.getStringExtra("mobile");
 
 
+
+
         pref = DataEntryListctivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
-        editor = pref.edit();
+
         usertypeglobal = pref.getString("type", null);
+        mobilegolbal=pref.getString("mobile",null);
+        Log.d(TAG, "onCreate: ...................user type in data view  "+ usertypeglobal);
+        Log.d(TAG, "onCreate: ...................mobile in data entry acivity  "+ mobilegolbal);
 
-        if(usertypeglobal.equals("doctor")||usertypeglobal.equals("patient")){
 
-            getdata(mobile);
-        }else if(usertypeglobal.equals("supplier")){
+        if(usertypeglobal.equals("Doctor")||usertypeglobal.equals("Patient")){
 
-            getdataforsupply(mobile);
+            getdata(mobilegolbal);
+            mDialog.show();
+        }else if(usertypeglobal.equals("Supplier")){
+
+            getdataforsupply(mobilegolbal);
+           mDialog.show();
+            Log.d(TAG, "onCreate: ...................suppler data call");
+           
         }
-
 
 
 
@@ -84,11 +108,10 @@ public class DataEntryListctivity extends AppCompatActivity {
             @Override
             public void onClick(View v) {
 
-                if(value=="supplier"){
+                if(usertypeglobal.equals("Supplier")){
                     startActivity(new Intent(getApplicationContext(),SupplierActivity.class));
 
                 }else {
-
                     startActivity(new Intent(getApplicationContext(),MainActivity.class));
                 }
 
@@ -110,8 +133,6 @@ public class DataEntryListctivity extends AppCompatActivity {
 
         Call<Responseclass> call = api.getData(mobile);
 
-
-
         call.enqueue(new Callback<Responseclass>() {
             @Override
             public void onResponse(Call<Responseclass> call, Response<Responseclass> response) {
@@ -120,21 +141,26 @@ public class DataEntryListctivity extends AppCompatActivity {
                 if(!response.isSuccessful()){
 
                     Log.d(TAG, "onResponse: ................error "+response.code());
+                    mDialog.dismiss();
                 }
+
+
+
 
 
 
                 List<Data> data =response.body().getData();
                 for(Data d : data){
 
-                    Data addata = new Data(d.getUsertype(),d.getFullname(),d.getMobile(),d.getUsername(),d.getLocation(),d.getWhat_u_need(),d.getHow_soon_do_u_need_it(),d.getHospital(),d.getEmail(),d.getPassword());
+                    Data addata = new Data(d.getId(),d.getMobile(),d.getWhat_u_need(),d.getHow_soon_do_u_need_it(),d.getWhat_u_supply(),
+                            d.getWhat_u_supply_other(),d.getHow_soon_can_u_supply(),d.getHospital(),d.getLocation());
                     listdata.add(addata);
                 }
 
                 DataCustomadapter_suppler adapter = new DataCustomadapter_suppler(DataEntryListctivity.this,listdata);
                 recyclerView.setAdapter(adapter);
-
                 adapter.notifyDataSetChanged();
+                mDialog.dismiss();
 
 
 
@@ -144,6 +170,7 @@ public class DataEntryListctivity extends AppCompatActivity {
             public void onFailure(Call<Responseclass> call, Throwable t) {
 
                 Log.d(TAG, "onFailure: .........fail "+t.getMessage());
+                mDialog.dismiss();
 
             }
         });
@@ -177,22 +204,30 @@ public class DataEntryListctivity extends AppCompatActivity {
                 if(!response.isSuccessful()){
 
                     Log.d(TAG, "onResponse: ................error "+response.code());
+                    mDialog.dismiss();
                 }
+                Log.d(TAG, "onResponse: .....................chek null "+ response.body());
 
+                    if(response.body()!=null){
 
+                        List<Data> data =response.body().getData();
 
-                List<Data> data =response.body().getData();
-                for(Data d : data){
+                        Log.d(TAG, "onResponse: ..................chek data exist or not in list  "+data.toString());
 
-                    Data addata = new Data(d.getUsertype(),d.getFullname(),d.getMobile(),d.getUsername(),d.getLocation(),d.getWhat_u_need(),d.getHow_soon_do_u_need_it(),d.getHospital(),d.getEmail(),d.getPassword());
-                    listdata.add(addata);
-                      }
+                        for(Data d : data){
 
-                DataCustomdapter adapter = new DataCustomdapter(DataEntryListctivity.this,listdata);
-                recyclerView.setAdapter(adapter);
+                            Data addata = new Data(d.getId(),d.getMobile(),d.getWhat_u_need(),d.getHow_soon_do_u_need_it(),d.getWhat_u_supply(),
+                                    d.getWhat_u_supply_other(),d.getHow_soon_can_u_supply(),d.getHospital(),d.getLocation());
+                            listdata.add(addata);
+                            DataCustomdapter adapter = new DataCustomdapter(DataEntryListctivity.this,listdata);
+                            //adapter.updateData(listdata);
+                            recyclerView.setAdapter(adapter);
+                            adapter.notifyDataSetChanged();
+                            mDialog.dismiss();
 
-                adapter.notifyDataSetChanged();
-
+                        }
+                    }
+             //   adapter.updateData(listdata);
 
 
             }
@@ -201,12 +236,58 @@ public class DataEntryListctivity extends AppCompatActivity {
             public void onFailure(Call<Responseclass> call, Throwable t) {
 
                 Log.d(TAG, "onFailure: .........fail "+t.getMessage());
+                mDialog.dismiss();
 
             }
         });
 
 
 
+
+    }
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        //MenuInflater inflater = getMenuInflater();
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+
+        switch (item.getItemId()){
+            case R.id.logout:
+                logout();
+                return true;
+
+            default:
+                return false;
+
+        }
+
+    }
+
+    private void logout() {
+
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putString("userexistancy", "null"); // Storing string
+        editor.putString("mobile",null);
+        editor.putString("password",null);
+        editor.putString("type",null);
+        editor.commit();
+
+
+        startActivity(new Intent(getApplicationContext(),SplashActivity.class));
+        finish();
 
     }
 }

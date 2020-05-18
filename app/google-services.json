@@ -1,0 +1,48 @@
+{
+  "project_info": {
+    "project_number": "548982247038",
+    "firebase_url": "https://criddam-covid-19.firebaseio.com",
+    "project_id": "criddam-covid-19",
+    "storage_bucket": "criddam-covid-19.appspot.com"
+  },
+  "client": [
+    {
+      "client_info": {
+        "mobilesdk_app_id": "1:548982247038:android:37a6af637e37c326b3d22f",
+        "android_client_info": {
+          "package_name": "com.criddam.covid_19criddam"
+        }
+      },
+      "oauth_client": [
+        {
+          "client_id": "548982247038-2qaa3ni4sbharnf6kcfb83toh5e2bpdq.apps.googleusercontent.com",
+          "client_type": 1,
+          "android_info": {
+            "package_name": "com.criddam.covid_19criddam",
+            "certificate_hash": "bc3850cef859bc7107fe8fd632b1d348af59b003"
+          }
+        },
+        {
+          "client_id": "548982247038-e8ch38g9b7libehddqmfgtn9ctacc7dn.apps.googleusercontent.com",
+          "client_type": 3
+        }
+      ],
+      "api_key": [
+        {
+          "current_key": "AIzaSyDEqUrt7xPPXI_LtIaLIYIcA40jWiGa0cM"
+        }
+      ],
+      "services": {
+        "appinvite_service": {
+          "other_platform_oauth_client": [
+            {
+              "client_id": "548982247038-e8ch38g9b7libehddqmfgtn9ctacc7dn.apps.googleusercontent.com",
+              "client_type": 3
+            }
+          ]
+        }
+      }
+    }
+  ],
+  "configuration_version": "1"
+}

@@ -8,6 +8,8 @@ import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.CheckBox;
@@ -61,8 +63,15 @@ public class SignsuppliActivity extends AppCompatActivity {
     String mb=null;
     String pass=null;
     String type_dp=null;
-
+    String loginstatus=null;
+    String mobile_golbal = null;
+    String loginstaus= null;
     LinearLayout linearLayout;
+    String email=null;
+    String hospital = null;
+    String location =null;
+    String name = null;
+    String password = null;
 
 
     List<Data> usrdata;
@@ -101,7 +110,7 @@ public class SignsuppliActivity extends AppCompatActivity {
 
 
 
-        cv.setOnClickListener(new View.OnClickListener() {
+     /*   cv.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
@@ -111,7 +120,7 @@ public class SignsuppliActivity extends AppCompatActivity {
                     if( !TextUtils.isEmpty(edt_mobile.getText().toString() )
                             && !TextUtils.isEmpty(edt_password.getText().toString())){
 
-                        pref = SignsuppliActivity.this.getSharedPreferences("suppref", 0); // 0 - for private mode
+                        pref = SignsuppliActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
                         editor = pref.edit();
                         editor.putString("mobile",edt_mobile.getText().toString()); // Storing string
                         editor.putString("password",edt_password.getText().toString());
@@ -127,35 +136,44 @@ public class SignsuppliActivity extends AppCompatActivity {
 
 
             }
-        });
+        });*/
 
 
 
 
-        pref = SignsuppliActivity.this.getSharedPreferences("suppref", 0); // 0 - for private mode
-        editor = pref.edit();
+        pref = SignsuppliActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+
         mb = pref.getString("mobile", null);
         pass = pref.getString("password", null);
         type_dp=pref.getString("type",null);
+       loginstatus = pref.getString("loginstatus",null);
+       mobile_golbal= pref.getString("mobile",null);
+       name=pref.getString("name",null);
+       password=pref.getString("pass",null);
+       email=pref.getString("email",null);
+       location=pref.getString("location",null);
+       hospital=pref.getString("hospital",null);
+
+
         Log.d(TAG, "onCreate: ........................... value "+ mb);
 
-        if(mb!=null && pass!=null && type_dp!=null){
+        Log.d(TAG, "onCreate: .....................loginstatus "+ loginstatus);
+        Log.d(TAG, "onCreate: ...................mobile golbal "+ mobile_golbal);
+
+        if(mobile_golbal!=null && loginstatus.equals("success")){
 
             Retrofit retrofit  = new Retrofit.Builder()
                     .baseUrl("http://sales.criddam.com/api/")
                     .addConverterFactory(GsonConverterFactory.create())
                     .build();
             api_covid = retrofit.create(Api_covid.class);
-
-
             linearLayout.setVisibility(View.INVISIBLE);
-
-            signIn(mb,pass);
-            mdilaog.show();
-
-        }else {
-
-            Toast.makeText(this, "some thing is null", Toast.LENGTH_SHORT).show();
+           // signIn(mb,pass);
+            mdilaog.setTitle("Data Uploading");
+            mdilaog.setMessage("Please wait");
+                //getdata(mobile_golbal);
+            insertdata(type,name,mobile_golbal,email,supplyitem,emergencyforsupply,password, location,othersupply);
+                mdilaog.show();
         }
 
 
@@ -176,28 +194,20 @@ public class SignsuppliActivity extends AppCompatActivity {
             }
         });
 
-
-
-
         btn_sumbit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+
                 if(!TextUtils.isEmpty(edt_mobile.getText().toString()) && !TextUtils.isEmpty(edt_password.getText()
-                        .toString()
-                )){
+                        .toString()) && supplyitem!=null && emergencyforsupply!=null && othersupply!=null ){
 
                     Retrofit retrofit  = new Retrofit.Builder()
                             .baseUrl("http://sales.criddam.com/api/")
                             .addConverterFactory(GsonConverterFactory.create())
                             .build();
                     api_covid = retrofit.create(Api_covid.class);
-
-
                     signIn(edt_mobile.getText().toString(),edt_password.getText().toString());
-
-
-
                     mdilaog.show();
                 }else {
 
@@ -215,7 +225,9 @@ public class SignsuppliActivity extends AppCompatActivity {
 
     private void signIn(String mobile,String password) {
 
-        Signin signin = new Signin(mobile,password);
+        //Signin signin = new Signin(mobile,password);
+
+        Log.d(TAG, "signIn: ............signed method is called");
 
         Call<ResponseBody> call = api_covid.createPost_Signin(mobile,password);
 
@@ -235,11 +247,11 @@ public class SignsuppliActivity extends AppCompatActivity {
                     if(response.code()==401){
                         s=response.errorBody().string();
 
-                        Log.d(TAG, "onResponse: .................resposne by serveer in singin while error page "+ s);
-                        Log.d(TAG, "onResponse: .................resposne by serveer code "+ response.code());
+                        Log.d(TAG, "onResponse: .................resposne by serveer in singin_supply while error page "+ s);
+                        Log.d(TAG, "onResponse: .................resposne by serveer singin supply  code "+ response.code());
                     }else {
                         s = response.body().string();
-                        Log.d(TAG, "onResponse: .................resposne by serveer in singin while successpage "+ s);
+                        Log.d(TAG, "onResponse: .................resposne by serveer in singin supply  while successpage "+ s);
                         Log.d(TAG, "onResponse: .................resposne by serveer code "+ response.code());
 
 
@@ -266,9 +278,11 @@ public class SignsuppliActivity extends AppCompatActivity {
 
                             Toast.makeText(SignsuppliActivity.this, jsonObject.getString("msg"), Toast.LENGTH_SHORT).show();
 
-                            pref = SignsuppliActivity.this.getSharedPreferences("suppref", 0); // 0 - for private mode
+                            pref = SignsuppliActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
                             editor = pref.edit();
-                            editor.putString("userexistancy", "userexist_supplier"); // Storing string
+                            editor.putString("loginstatus", "success"); // Storing string
+                            editor.putString("mobile",mobile);
+                            editor.putString("type","Supplier");
                             editor.commit();
 
                             getdata(mobile);
@@ -331,31 +345,38 @@ public class SignsuppliActivity extends AppCompatActivity {
 
 
 
-                List<Data> data =response.body().getData();
-                for(Data d : data){
-                    usertype=d.getUsertype();
-                    name=d.getFullname();
-                    mobile=d.getMobile();
-                    email=d.getEmail();
-                    password=d.getPassword();
-                    hospital=d.getHospital();
-                    location=d.getLocation();
+
+                if(response.body()!=null){
 
 
+                    List<Data> data =response.body().getData();
+                    for(Data d : data){
+
+                        mobile=d.getMobile();
+                        hospital=d.getHospital();
+                        location=d.getLocation();
+
+
+                    }
+
+
+                    if( mobile!=null){
+
+                        insertdata(usertype,name,mobile,email,supplyitem,emergencyforsupply,password,
+
+                                location,othersupply
+                        );
+
+
+                        Log.d(TAG, "onResponse: .................inserdata() method is called "+ mobile);
+                    }else {
+                        Toast.makeText(SignsuppliActivity.this, "inner class null", Toast.LENGTH_SHORT).show();
+                    }
                 }
 
+                if(response.body()==null){
 
-                if( mobile!=null){
-
-                    insertdata(usertype,name,mobile,email,supplyitem,emergencyforsupply,password,
-
-                            location,othersupply
-                    );
-
-
-                    Log.d(TAG, "onResponse: .................inserdata() method is called "+ mobile);
-                }else {
-                    Toast.makeText(SignsuppliActivity.this, "inner class null", Toast.LENGTH_SHORT).show();
+                    logout();
                 }
 
             }
@@ -431,4 +452,82 @@ public class SignsuppliActivity extends AppCompatActivity {
             }
         });
     }
+
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        //MenuInflater inflater = getMenuInflater();
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+        switch (item.getItemId()) {
+            case R.id.logout:
+                logout();
+                return true;
+
+            case R.id.list:
+                pref = SignsuppliActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+
+                loginstaus = pref.getString("loginstatus", null);
+                if(loginstaus!=null){
+                    startActivity(new Intent(getApplicationContext(),DataEntryListctivity.class));
+                }else {
+                    Toast.makeText(this, "Please Login first ", Toast.LENGTH_SHORT).show();
+                }
+
+                return true;
+
+            default:
+                return false;
+
+        }
+    }
+
+
+    private void logout() {
+
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putString("userexistancy", "null"); // Storing string
+        editor.putString("mobile",null);
+        editor.putString("password",null);
+        editor.putString("loginstatus",null);
+        editor.putString("type",null);
+        editor.commit();
+
+
+        startActivity(new Intent(getApplicationContext(),SplashActivity.class));
+        finish();
+
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.logout);
+
+        pref = SignsuppliActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+        loginstaus = pref.getString("loginstatus", null);
+
+        if(loginstaus==null){
+            item.setTitle("");
+        }
+
+
+
+
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+
+
 }

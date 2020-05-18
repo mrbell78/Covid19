@@ -1,6 +1,9 @@
 package com.criddam.covid_19criddam.apicalling;
 
+import com.criddam.covid_19criddam.model.Alluserdataresponse;
+import com.criddam.covid_19criddam.model.DataResponseback;
 import com.criddam.covid_19criddam.model.Getdata_doctor;
+import com.criddam.covid_19criddam.model.HospitalPrentclass_suggestion;
 import com.criddam.covid_19criddam.model.Post;
 import com.criddam.covid_19criddam.model.Post_supply;
 import com.criddam.covid_19criddam.model.Responseclass;
@@ -14,7 +17,9 @@ import retrofit2.http.Body;
 import retrofit2.http.Field;
 import retrofit2.http.FormUrlEncoded;
 import retrofit2.http.GET;
+import retrofit2.http.PATCH;
 import retrofit2.http.POST;
+import retrofit2.http.PUT;
 import retrofit2.http.Path;
 
 public interface Api_covid {
@@ -72,6 +77,38 @@ public interface Api_covid {
     @GET("{mobile_no}")
     Call<Responseclass> getData(@Path("mobile_no")String mobile_no);
 
+    @FormUrlEncoded
+    @POST("{id}")
+    Call<ResponseBody> update(
+            @Path("id") int id,
+            @Field("what_u_need") String what_u_need,
+            @Field("how_soon_do_u_need_it") String how_soon_do_u_need_it
+    );
 
+
+    @FormUrlEncoded
+    @POST("{id}")
+    Call<ResponseBody> update_supply(
+            @Path("id") int id,
+            @Field("what_u_supply") String what_u_supply,
+            @Field("what_u_supply_other") String what_u_supply_other,
+            @Field("how_soon_can_u_supply") String how_soon_can_u_supply
+    );
+
+    @GET("show_hospitals")
+    Call<HospitalPrentclass_suggestion> gethospital();
+
+
+
+
+
+
+
+    @GET("{id}")
+    Call<Void> delete(@Path("id")int id);
+
+
+    @GET("all_orders")
+    Call<Alluserdataresponse> getalluser();
 
 }

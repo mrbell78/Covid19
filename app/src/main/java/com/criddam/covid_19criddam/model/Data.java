@@ -9,29 +9,9 @@ public class Data {
     @Expose
     int id;
 
-    @SerializedName("usertype")
-    @Expose
-    String usertype;
-
-
-    @SerializedName("fullname")
-    @Expose
-    String fullname;
-
-
     @SerializedName("mobile")
     @Expose
     String mobile;
-
-
-
-    @SerializedName("username")
-    @Expose
-    String username;
-
-    @SerializedName("location")
-    @Expose
-    String location;
 
     @SerializedName("what_u_need")
     @Expose
@@ -45,6 +25,7 @@ public class Data {
     @Expose
     String what_u_supply;
 
+
     @SerializedName("what_u_supply_other")
     @Expose
     String what_u_supply_other;
@@ -56,16 +37,9 @@ public class Data {
     @Expose
     String hospital;
 
-    @SerializedName("email")
+    @SerializedName("location")
     @Expose
-    String email;
-    @SerializedName("password")
-    @Expose
-    String password;
-
-    @SerializedName("email_verified_at")
-    @Expose
-    String email_verified_at;
+    String location;
 
     @SerializedName("created_at")
     @Expose
@@ -75,18 +49,16 @@ public class Data {
     @Expose
     String updated_at;
 
-
-    public Data(String usertype, String fullname, String mobile, String username, String location, String what_u_need, String how_soon_do_u_need_it, String hospital, String email, String password) {
-        this.usertype = usertype;
-        this.fullname = fullname;
+    public Data(int id, String mobile, String what_u_need, String how_soon_do_u_need_it, String what_u_supply, String what_u_supply_other, String how_soon_can_u_supply, String hospital, String location) {
+        this.id = id;
         this.mobile = mobile;
-        this.username = username;
-        this.location = location;
         this.what_u_need = what_u_need;
         this.how_soon_do_u_need_it = how_soon_do_u_need_it;
+        this.what_u_supply = what_u_supply;
+        this.what_u_supply_other = what_u_supply_other;
+        this.how_soon_can_u_supply = how_soon_can_u_supply;
         this.hospital = hospital;
-        this.email = email;
-        this.password = password;
+        this.location = location;
     }
 
     public int getId() {
@@ -97,44 +69,12 @@ public class Data {
         this.id = id;
     }
 
-    public String getUsertype() {
-        return usertype;
-    }
-
-    public void setUsertype(String usertype) {
-        this.usertype = usertype;
-    }
-
-    public String getFullname() {
-        return fullname;
-    }
-
-    public void setFullname(String fullname) {
-        this.fullname = fullname;
-    }
-
     public String getMobile() {
         return mobile;
     }
 
     public void setMobile(String mobile) {
         this.mobile = mobile;
-    }
-
-    public String getUsername() {
-        return username;
-    }
-
-    public void setUsername(String username) {
-        this.username = username;
-    }
-
-    public String getLocation() {
-        return location;
-    }
-
-    public void setLocation(String location) {
-        this.location = location;
     }
 
     public String getWhat_u_need() {
@@ -185,43 +125,87 @@ public class Data {
         this.hospital = hospital;
     }
 
-    public String getEmail() {
-        return email;
+    public String getLocation() {
+        return location;
     }
 
-    public void setEmail(String email) {
-        this.email = email;
+    public void setLocation(String location) {
+        this.location = location;
     }
 
-    public String getPassword() {
-        return password;
+
+    /*  public Data(String mobile, String what_u_need, String how_soon_do_u_need_it, String what_u_supply, String what_u_supply_other, String how_soon_can_u_supply, String hospital, String location) {
+        this.mobile = mobile;
+        this.what_u_need = what_u_need;
+        this.how_soon_do_u_need_it = how_soon_do_u_need_it;
+        this.what_u_supply = what_u_supply;
+        this.what_u_supply_other = what_u_supply_other;
+        this.how_soon_can_u_supply = how_soon_can_u_supply;
+        this.hospital = hospital;
+        this.location = location;
     }
 
-    public void setPassword(String password) {
-        this.password = password;
+    public String getMobile() {
+        return mobile;
     }
 
-    public String getEmail_verified_at() {
-        return email_verified_at;
+    public void setMobile(String mobile) {
+        this.mobile = mobile;
     }
 
-    public void setEmail_verified_at(String email_verified_at) {
-        this.email_verified_at = email_verified_at;
+    public String getWhat_u_need() {
+        return what_u_need;
     }
 
-    public String getCreated_at() {
-        return created_at;
+    public void setWhat_u_need(String what_u_need) {
+        this.what_u_need = what_u_need;
     }
 
-    public void setCreated_at(String created_at) {
-        this.created_at = created_at;
+    public String getHow_soon_do_u_need_it() {
+        return how_soon_do_u_need_it;
     }
 
-    public String getUpdated_at() {
-        return updated_at;
+    public void setHow_soon_do_u_need_it(String how_soon_do_u_need_it) {
+        this.how_soon_do_u_need_it = how_soon_do_u_need_it;
     }
 
-    public void setUpdated_at(String updated_at) {
-        this.updated_at = updated_at;
+    public String getWhat_u_supply() {
+        return what_u_supply;
     }
+
+    public void setWhat_u_supply(String what_u_supply) {
+        this.what_u_supply = what_u_supply;
+    }
+
+    public String getWhat_u_supply_other() {
+        return what_u_supply_other;
+    }
+
+    public void setWhat_u_supply_other(String what_u_supply_other) {
+        this.what_u_supply_other = what_u_supply_other;
+    }
+
+    public String getHow_soon_can_u_supply() {
+        return how_soon_can_u_supply;
+    }
+
+    public void setHow_soon_can_u_supply(String how_soon_can_u_supply) {
+        this.how_soon_can_u_supply = how_soon_can_u_supply;
+    }
+
+    public String getHospital() {
+        return hospital;
+    }
+
+    public void setHospital(String hospital) {
+        this.hospital = hospital;
+    }
+
+    public String getLocation() {
+        return location;
+    }
+
+    public void setLocation(String location) {
+        this.location = location;
+    }*/
 }

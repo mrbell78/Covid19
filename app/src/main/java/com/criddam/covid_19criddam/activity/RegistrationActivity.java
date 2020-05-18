@@ -15,9 +15,11 @@ import android.text.Editable;
 import android.text.TextUtils;
 import android.text.TextWatcher;
 import android.util.Log;
+import android.util.Size;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.WindowManager;
+import android.widget.ArrayAdapter;
 import android.widget.AutoCompleteTextView;
 import android.widget.Button;
 import android.widget.EditText;
@@ -28,17 +30,12 @@ import android.widget.Toast;
 import com.criddam.covid_19criddam.R;
 import com.criddam.covid_19criddam.adapter.PlaceAutoSuggetionAdapter;
 import com.criddam.covid_19criddam.apicalling.Api_covid;
+import com.criddam.covid_19criddam.model.HospitalPrentclass_suggestion;
 import com.criddam.covid_19criddam.model.Post;
+import com.criddam.covid_19criddam.model.hospitalsugetion;
 import com.criddam.covid_19criddam.placeutils.PlaceJSONParser;
 import com.criddam.covid_19criddam.utils.DatabaseHelper;
-import com.google.android.gms.common.api.Status;
-import com.google.android.libraries.places.api.Places;
-import com.google.android.libraries.places.api.model.Place;
-import com.google.android.libraries.places.widget.Autocomplete;
-import com.google.android.libraries.places.widget.AutocompleteActivity;
-import com.google.android.libraries.places.widget.AutocompleteSupportFragment;
-import com.google.android.libraries.places.widget.listener.PlaceSelectionListener;
-import com.google.android.libraries.places.widget.model.AutocompleteActivityMode;
+
 import com.google.gson.JsonObject;
 
 import org.json.JSONException;
@@ -52,6 +49,7 @@ import java.io.UnsupportedEncodingException;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
@@ -70,6 +68,7 @@ public class RegistrationActivity extends AppCompatActivity {
     Button btn_submit, btn_cancel;
     Toolbar mToolbaar;
     Api_covid api_covid;
+    AutoCompleteTextView autoCompleteTextView;
     /*PlacesTask placesTask;
     PlacesTask.ParserTask parserTask;*/
     String docneed,docemergency,type;
@@ -85,7 +84,16 @@ public class RegistrationActivity extends AppCompatActivity {
     String usertypeglobal=null;
     SharedPreferences pref ;
     SharedPreferences.Editor editor ;
+    List<hospitalsugetion> hospitallist =new ArrayList<>();
+    String[] hospitalname = new String[]{"Delta hospital","Labid hospital",
+            "Bangabandhu Memorial Hospital","Bangladesh Medical College Hospital",
+            "Addin hospital","United hospital","Kurmitola hospital",
+            "Ibn Sina Hospital","Moulana Bhasani Medical College Hospital",
+            "Ahsania Mission Cancer & General Hospital",
+            "Gonoshastha Nagar Hospital"
 
+
+    };
     @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -94,22 +102,22 @@ public class RegistrationActivity extends AppCompatActivity {
         setSupportActionBar(mToolbaar);
         //getWindow().setSoftInputMode(WindowManager.LayoutParams.SOFT_INPUT_ADJUST_PAN);
 
-        getSupportActionBar().setTitle("Welcome to COVID-19 CRID DAM");
+        getSupportActionBar().setTitle("COVID-19 CRID DAM");
         btn_cancel = findViewById(R.id.btn_cancel);
         btn_submit = findViewById(R.id.btn_submit);
 
         edt_name = findViewById(R.id.fullname);
         edt_mobile = findViewById(R.id.mobile);
         edt_email = findViewById(R.id.email);
-        edt_hospital = findViewById(R.id.hospital);
+        autoCompleteTextView = findViewById(R.id.hospital);
         edt_location = findViewById(R.id.location);
         edt_password=findViewById(R.id.password_doc);
         btn_radio=findViewById(R.id.btn_radio);
 
 
-        pref = RegistrationActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
-        editor = pref.edit();
-        usertypeglobal = pref.getString("type", null);
+        ArrayAdapter<String> adapter = new ArrayAdapter<>(this,android.R.layout.simple_list_item_1,hospitalname);
+        autoCompleteTextView.setAdapter(adapter);
+
 
         db=new DatabaseHelper(this);
 
@@ -119,9 +127,6 @@ public class RegistrationActivity extends AppCompatActivity {
 
 
 
-        if (!Places.isInitialized()) {
-            Places.initialize(getApplicationContext(), apiKey);
-        }
 
 
 
@@ -130,28 +135,44 @@ public class RegistrationActivity extends AppCompatActivity {
          docneed = intent.getStringExtra("docneed");
         docemergency  = intent.getStringExtra("emergency");
         type= intent.getStringExtra("type");
+        pref = RegistrationActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+        editor = pref.edit();
+        editor.putString("type",type);
+        editor.commit();
 
        if(type!=null){
            btn_radio.setChecked(true);
            btn_radio.setText(type);
        }
 
+
         btn_submit.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
 
+                Log.d(TAG, "onCreate: ............doctorneed "+ docneed);
+                Log.d(TAG, "onCreate: ............doctor Emergency "+ docemergency);
+                Log.d(TAG, "onCreate: ............usertypegolabl  "+ docneed);
+
 
                 if (!TextUtils.isEmpty(edt_name.getText().toString())
                         && !TextUtils.isEmpty(edt_mobile.getText().toString())
-                        && !TextUtils.isEmpty(edt_hospital.getText().toString())
+
                         && !TextUtils.isEmpty(edt_location.getText().toString())
                         && !TextUtils.isEmpty(edt_password.getText().toString())
-                        && !TextUtils.isEmpty(edt_email.getText().toString())
                         && docneed!=null
                         && docemergency!=null
-                        && usertypeglobal!=null
+                        && type!=null
 
                 ) {
+
+                    Log.d(TAG, "onClick: ...................name "+edt_name.getText().toString());
+                    Log.d(TAG, "onClick: ...................edt_mobile "+edt_mobile.getText().toString());
+                    Log.d(TAG, "onClick: ...................edt_location "+edt_location.getText().toString());
+                    Log.d(TAG, "onClick: ...................autoCompleteTextView "+autoCompleteTextView.getText().toString());
+                    Log.d(TAG, "onClick: ...................docneed "+docneed);
+                    Log.d(TAG, "onClick: ...................docemergency "+docemergency);
+                    Log.d(TAG, "onClick: ...................type "+type);
 
                     Retrofit retrofit  = new Retrofit.Builder()
                             .baseUrl("http://sales.criddam.com/api/")
@@ -161,7 +182,7 @@ public class RegistrationActivity extends AppCompatActivity {
                     Toast.makeText(RegistrationActivity.this, "user type "+ type, Toast.LENGTH_SHORT).show();
                     api_covid = retrofit.create(Api_covid.class);
                     createPost(usertypeglobal,edt_name.getText().toString(),edt_mobile.getText().toString(),edt_email.getText().toString(),docneed,docemergency,
-                            edt_password.getText().toString(),edt_hospital.getText().toString(),edt_location.getText().toString()
+                            edt_password.getText().toString(),autoCompleteTextView.getText().toString(),edt_location.getText().toString()
                             );
 
                    mdialog.show();
@@ -174,18 +195,15 @@ public class RegistrationActivity extends AppCompatActivity {
                 } else if (TextUtils.isEmpty(edt_mobile.getText().toString())) {
                     edt_mobile.setError("You must have to fill up this filed");
                     Toast.makeText(RegistrationActivity.this, "filed is missing ", Toast.LENGTH_SHORT).show();
-                } else if (TextUtils.isEmpty(edt_hospital.getText().toString())) {
-                    edt_hospital.setError("You must have to fill up this filed");
-                    Toast.makeText(RegistrationActivity.this, "filed is missing ", Toast.LENGTH_SHORT).show();
-                } else if (TextUtils.isEmpty(edt_location.getText().toString())) {
+                }  else if (TextUtils.isEmpty(edt_location.getText().toString())) {
                     edt_location.setError("You must have to fill up this filed");
                     Toast.makeText(RegistrationActivity.this, "filed is missing ", Toast.LENGTH_SHORT).show();
                 } else if (TextUtils.isEmpty(edt_password.getText().toString())) {
                     edt_password.setError("You must have to fill up this filed");
                     Toast.makeText(RegistrationActivity.this, "filed is missing ", Toast.LENGTH_SHORT).show();
-                } else if (docneed ==null || docemergency==null ) {
+                } else if (docneed ==null || docemergency==null || type==null ) {
 
-                    Toast.makeText(RegistrationActivity.this, "docnedd is emtpy ", Toast.LENGTH_SHORT).show();
+                    Toast.makeText(RegistrationActivity.this, "Please start from beginning  ", Toast.LENGTH_SHORT).show();
                 }
 
 
@@ -203,7 +221,16 @@ public class RegistrationActivity extends AppCompatActivity {
                         .setPositiveButton(android.R.string.yes, new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int which) {
                                 // Continue with delete operation
-                                startActivity(new Intent(getApplicationContext(), MainActivity.class));
+                                SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
+                                SharedPreferences.Editor editor = pref.edit();
+
+                                editor.putString("userexistancy", "null"); // Storing string
+                                editor.putString("mobile",null);
+                                editor.putString("password",null);
+                                editor.putString("loginstatus",null);
+                                editor.putString("type",null);
+                                editor.commit();
+                                startActivity(new Intent(getApplicationContext(), SplashActivity.class));
                             }
                         }).setNegativeButton(android.R.string.no, null)
                         .setIcon(R.drawable.ic_warning)
@@ -212,8 +239,59 @@ public class RegistrationActivity extends AppCompatActivity {
         });
     }
 
+  /*  private void gethospta(AutoCompleteTextView textView) {
+
+        Retrofit retrofit  = new Retrofit.Builder()
+                .baseUrl("http://sales.criddam.com/api/")
+                .addConverterFactory(GsonConverterFactory.create())
+                .build();
+
+        api_covid= retrofit.create(Api_covid.class);
+
+        Call<HospitalPrentclass_suggestion> call = api_covid.gethospital();
+
+        call.enqueue(new Callback<HospitalPrentclass_suggestion>() {
+            @Override
+            public void onResponse(Call<HospitalPrentclass_suggestion> call, Response<HospitalPrentclass_suggestion> response) {
+                if(!response.isSuccessful()){
+                    Log.d(TAG, "onResponse: ..............error");
+                }
+
+                List<hospitalsugetion> hospital = response.body().getLisdata();
+                String []hospitaldatafound=new String [1000];
+                String hname;
+                int i = 0 ;
+                for(hospitalsugetion data : hospital){
+
+                    hospitalsugetion h = new hospitalsugetion(data.getId(),data.getName(),data.getAddress());
+
+                    hospitallist.add(h);
+                    hospitaldatafound[i]= data.getAddress();
+                    Log.d(TAG, "onResponse: ...............value of "+i);
+                    i++;
+
+                }
+
+                ArrayAdapter<String> adapter = new ArrayAdapter<>(RegistrationActivity.this,android.R.layout.simple_list_item_1,hospitaldatafound);
+                textView.setAdapter(adapter);
+                textView.showDropDown();
+
+                Log.d(TAG, "onResponse: ...............modified value "+ hospitaldatafound[2]);
 
 
+
+
+            }
+
+            @Override
+            public void onFailure(Call<HospitalPrentclass_suggestion> call, Throwable t) {
+
+            }
+        });
+
+
+
+    }*/
 
 
     private void createPost(String usertype,String name,String mobile,String email,String what_u_need,String how_soon_do_u_need_it,String password,String hospital,String location) {
@@ -256,18 +334,23 @@ public class RegistrationActivity extends AppCompatActivity {
                             edt_mobile.setError("User exist");
                         } else {
 
-
-
+                            pref = RegistrationActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+                            editor = pref.edit();
+                            editor.putString("loginstatus", "success"); // Storing string
+                            editor.putString("mobile",mobile);
+                            editor.putString("type",type);
+                            editor.putString("hospital",hospital);
+                            editor.putString("email",email);
+                            editor.putString("location",location);
+                            editor.putString("name",name);
+                            editor.putString("pass",password);
+                            editor.commit();
 
                                 mdialog.dismiss();
                                 Toast.makeText(RegistrationActivity.this, "Data saved successfully", Toast.LENGTH_SHORT).show();
                                 startActivity(new Intent(getApplicationContext(), Submissio_completeActivity.class).putExtra("type", "Doctor").putExtra("mobile",mobile));
                                 finish();
                                 Log.d(TAG, "onClick: ........................status glb "+status_glb);
-
-
-
-
                         }
 
                     } catch (JSONException e) {

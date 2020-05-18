@@ -52,7 +52,7 @@
             android:layout_height="wrap_content"
             android:layout_weight="1"
             android:textColor="@android:color/white"
-            android:text="Add New"
+            android:text="New Order"
             android:textAllCaps="false"
             android:background="#2739A1"
             android:id="@+id/btn_addnew"

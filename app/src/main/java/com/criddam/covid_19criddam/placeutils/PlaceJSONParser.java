@@ -42,7 +42,6 @@ public class PlaceJSONParser {
                 e.printStackTrace();
             }
         }
-
         return placesList;
     }
 

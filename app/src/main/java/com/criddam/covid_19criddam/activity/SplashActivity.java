@@ -47,7 +47,7 @@ public class SplashActivity extends AppCompatActivity {
 
 
         pref = SplashActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
-        editor = pref.edit();
+
         user = pref.getString("type", null);
 
         Log.d(TAG, "onCreate: ................user chek "+ user);
@@ -66,31 +66,31 @@ public class SplashActivity extends AppCompatActivity {
                     case R.id.doctor:
 
 
-                        pref = SplashActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+                       /* pref = SplashActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
                         editor = pref.edit();
                         editor.putString("type","doctor");
-                        editor.commit();
+                        editor.commit();*/
 
-                          startActivity(new Intent(getApplicationContext(),MainActivity.class).putExtra("doc","Doctor"));
-                        finish();
-                        break;
+                          startActivity(new Intent(getApplicationContext(),DoctorRequestActivity.class).putExtra("doc","Doctor"));
+                            finish();
+                            break;
                     case R.id.patient:
 
-                        pref = SplashActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+                        /*pref = SplashActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
                         editor = pref.edit();
                         editor.putString("type","patient");
-                        editor.commit();
+                        editor.commit();*/
 
                         Toast.makeText(SplashActivity.this, "you selected as patient", Toast.LENGTH_SHORT).show();
-                        startActivity(new Intent(getApplicationContext(),MainActivity.class).putExtra("doc","Patient"));
+                        startActivity(new Intent(getApplicationContext(),DoctorRequestActivity.class).putExtra("doc","Patient"));
                         finish();
                         break;
                     case R.id.supplier:
 
-                        pref = SplashActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+                       /* pref = SplashActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
                         editor = pref.edit();
                         editor.putString("type","supplier");
-                        editor.commit();
+                        editor.commit();*/
 
                         Toast.makeText(SplashActivity.this, "you selected as supplier", Toast.LENGTH_SHORT).show();
                         startActivity(new Intent(getApplicationContext(),SupplierActivity.class).putExtra("sp","supplier"));
@@ -110,16 +110,15 @@ public class SplashActivity extends AppCompatActivity {
 
 
         Log.d(TAG, "onStart: .........................userandtype "+ user);
-        if(user.equals("doctor")){
+        if(user.equals("Doctor")){
             startActivity(new Intent(getApplicationContext(),MainActivity.class).putExtra("type","Doctor"));
             finish();
-        }else if(user.equals("patient")){
+        }else if(user.equals("Patient")){
 
             startActivity(new Intent(getApplicationContext(),MainActivity.class).putExtra("type","Patient"));
             finish();
 
-        }else if(user.equals("supplier")){
-
+        }else if(user.equals("Supplier")){
             startActivity(new Intent(getApplicationContext(),SupplierActivity.class));
             finish();
         }

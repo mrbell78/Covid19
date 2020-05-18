@@ -1,0 +1,44 @@
+<?xml version="1.0" encoding="utf-8"?>
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".activity.DoctorRequestActivity">
+
+    <include layout="@layout/maintoolbar"
+        android:id="@+id/ftoolbar"/>
+
+
+    <com.google.android.material.tabs.TabLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tablayout"
+        android:background="@android:color/transparent"
+        app:tabMode="fixed"
+        app:tabTextAppearance="@android:style/TextAppearance.Widget.TabWidget"
+        android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar"
+        android:layout_below="@+id/ftoolbar"
+        app:tabSelectedTextColor="@color/colorPrimary"
+        />
+
+    <!--app:tabSelectedTextColor="@android:color/white"
+        app:tabTextColor="@android:color/white"-->
+
+   <!-- <com.google.android.material.tabs.TabLayout
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/tablayoutdoctor"
+        android:background="@color/colorPrimary"
+        android:elevation="6dp"
+        android:minHeight="?attr/actionBarSize"
+        android:theme="@style/Theme.AppCompat.DayNight.DarkActionBar"/>
+-->
+    <androidx.viewpager2.widget.ViewPager2
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:layout_below="@+id/tablayout"
+        android:id="@+id/viewpagerdoctor">
+
+    </androidx.viewpager2.widget.ViewPager2>
+</RelativeLayout>

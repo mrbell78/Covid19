@@ -7,6 +7,8 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -42,6 +44,7 @@ public class Submissio_completeActivity extends AppCompatActivity {
     SharedPreferences.Editor editor ;
     String type_dp=null;
     String usertypeglobal=null;
+    String loginstaus = null;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -56,8 +59,10 @@ public class Submissio_completeActivity extends AppCompatActivity {
 
 
         pref = Submissio_completeActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
-        editor = pref.edit();
+
         usertypeglobal = pref.getString("type", null);
+
+        Log.d(TAG, "onCreate: ...............user type in submissoin  "+ usertypeglobal);
 
 
         Post post = new Post();
@@ -66,7 +71,7 @@ public class Submissio_completeActivity extends AppCompatActivity {
 
         mToolbaar=findViewById(R.id.toolbar);
         setSupportActionBar(mToolbaar);
-        getSupportActionBar().setTitle("Welcome to COVID-19 CRID DAM");
+        getSupportActionBar().setTitle("COVID-19 CRID DAM");
         tv_identifytext=findViewById(R.id.text_item);
 
         Intent i = getIntent();
@@ -75,7 +80,7 @@ public class Submissio_completeActivity extends AppCompatActivity {
 
         Log.d(TAG, "onCreate: ................outside ev "+value);
 
-        if(usertypeglobal.equals("supplier")){
+        if(usertypeglobal!=null){
 
             Log.d(TAG, "onCreate: .....................vaue of user type text modify "+value);
             tv_identifytext.setText("Your submission is completed successfully");
@@ -85,15 +90,12 @@ public class Submissio_completeActivity extends AppCompatActivity {
         btn_addnew.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                if(usertypeglobal.equals("supplier")){
+                if(usertypeglobal.equals("Supplier")){
 
                     startActivity(new Intent(getApplicationContext(),SupplierActivity.class));
                     finish();
-
-
                     Log.d(TAG, "onCreate: .....................vaue of user type doctor ui "+value);
-
-                      }else if(usertypeglobal.equals("patient") || usertypeglobal.equals("doctor")){
+                      }else if(usertypeglobal.equals("Patient") || usertypeglobal.equals("Doctor")){
                         startActivity(new Intent(getApplicationContext(),MainActivity.class));
                         finish();
 
@@ -104,7 +106,6 @@ public class Submissio_completeActivity extends AppCompatActivity {
         btn_viwlist.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-
 
                 startActivity(new Intent(getApplicationContext(),DataEntryListctivity.class)
                         .putExtra("mobile",mobile).putExtra("value",value));
@@ -120,4 +121,80 @@ public class Submissio_completeActivity extends AppCompatActivity {
 
 
     }
+
+
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        //MenuInflater inflater = getMenuInflater();
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+        switch (item.getItemId()) {
+            case R.id.logout:
+                logout();
+                return true;
+            case R.id.list:
+                pref = Submissio_completeActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+
+                loginstaus = pref.getString("loginstatus", null);
+                if(loginstaus!=null){
+                    startActivity(new Intent(getApplicationContext(),DataEntryListctivity.class));
+                }else {
+                    Toast.makeText(this, "Please Login first ", Toast.LENGTH_SHORT).show();
+                }
+
+                return true;
+
+            default:
+                return false;
+
+        }
+    }
+
+
+    private void logout() {
+
+        SharedPreferences pref = getApplicationContext().getSharedPreferences("MyPref", 0); // 0 - for private mode
+        SharedPreferences.Editor editor = pref.edit();
+
+        editor.putString("userexistancy", "null"); // Storing string
+        editor.putString("mobile",null);
+        editor.putString("password",null);
+        editor.putString("loginstatus",null);
+        editor.putString("type",null);
+        editor.commit();
+
+
+        startActivity(new Intent(getApplicationContext(),SplashActivity.class));
+        finish();
+
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.logout);
+
+        pref = Submissio_completeActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+
+        loginstaus = pref.getString("loginstatus", null);
+
+        if(loginstaus==null){
+            item.setTitle("");
+        }
+
+
+
+
+
+        return super.onPrepareOptionsMenu(menu);
+    }
+
+
 }

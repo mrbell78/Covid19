@@ -3,12 +3,14 @@ package com.criddam.covid_19criddam.activity;
 import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
+import android.app.Activity;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.graphics.Color;
 import android.os.Build;
 import android.os.Bundle;
 import android.text.TextUtils;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuItem;
 import android.view.View;
@@ -29,6 +31,12 @@ public class MainActivity extends AppCompatActivity {
     Toolbar mToolbaar;
     EditText edt_item;
     String type ;
+    String  loginstaus = null;
+    SharedPreferences pref ;
+    SharedPreferences.Editor editor ;
+
+
+    private static final String TAG = "MainActivity";
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -53,14 +61,26 @@ public class MainActivity extends AppCompatActivity {
 
         Intent i  = getIntent();
         type = i.getStringExtra("doc");
+        Log.d(TAG, "onCreate: ...........what u need activity............the user type "+ type);
 
 
+        pref = MainActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+
+        loginstaus = pref.getString("loginstatus", null);
+
+
+        if(loginstaus!=null){
+            btn_previous.setVisibility(View.INVISIBLE);
+        }
 
         btn_next.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
                 if(!TextUtils.isEmpty(edt_item.getText().toString())){
-                    startActivity(new Intent(getApplicationContext(),DoctorEmergencyActivity.class).putExtra("docneed",edt_item.getText().toString()).putExtra("type",type));
+
+                    Intent intent = new Intent(getApplicationContext(),DoctorEmergencyActivity.class);
+                    intent.putExtra("docneed",edt_item.getText().toString()).putExtra("type",type);
+                    startActivity(intent);
 
 
 
@@ -74,7 +94,6 @@ public class MainActivity extends AppCompatActivity {
         btn_previous.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
-                startActivity(new Intent(getApplicationContext(),SplashActivity.class));
                 finish();
             }
         });
@@ -87,7 +106,10 @@ public class MainActivity extends AppCompatActivity {
     public boolean onCreateOptionsMenu(Menu menu) {
 
         //MenuInflater inflater = getMenuInflater();
+
         getMenuInflater().inflate(R.menu.main_menu,menu);
+
+
         return true;
     }
 
@@ -97,9 +119,25 @@ public class MainActivity extends AppCompatActivity {
 
 
 
+
         switch (item.getItemId()){
             case R.id.logout:
-                logout();
+                if(item.getTitle().equals("Login")){
+                    login();
+                }else {
+                    logout();
+                }
+                return true;
+            case R.id.list:
+                pref = MainActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+
+                loginstaus = pref.getString("loginstatus", null);
+                if(loginstaus!=null){
+                    startActivity(new Intent(getApplicationContext(),DataEntryListctivity.class));
+                }else {
+                    Toast.makeText(this, "Please Login first ", Toast.LENGTH_SHORT).show();
+                }
+
                 return true;
 
             default:
@@ -107,6 +145,29 @@ public class MainActivity extends AppCompatActivity {
 
         }
 
+    }
+
+    private void login() {
+        Toast.makeText(this, "Click next ", Toast.LENGTH_SHORT).show();
+    }
+
+    @Override
+    public boolean onPrepareOptionsMenu(Menu menu) {
+        MenuItem item = menu.findItem(R.id.logout);
+
+        pref = MainActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+
+        loginstaus = pref.getString("loginstatus", null);
+
+            if(loginstaus==null){
+                item.setTitle("Login");
+            }
+
+
+
+
+
+        return super.onPrepareOptionsMenu(menu);
     }
 
     private void logout() {
@@ -117,6 +178,7 @@ public class MainActivity extends AppCompatActivity {
         editor.putString("userexistancy", "null"); // Storing string
         editor.putString("mobile",null);
         editor.putString("password",null);
+        editor.putString("loginstatus",null);
         editor.putString("type",null);
         editor.commit();
 
@@ -125,4 +187,6 @@ public class MainActivity extends AppCompatActivity {
         finish();
 
     }
+
+
 }

@@ -7,9 +7,12 @@ import androidx.appcompat.widget.Toolbar;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.os.Bundle;
 import android.text.TextUtils;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager;
 import android.widget.Button;
@@ -45,6 +48,8 @@ public class ResistrationSupplierActivity extends AppCompatActivity {
     String sptime;
     String othersupply;
     ProgressDialog mdialog;
+    SharedPreferences pref ;
+    SharedPreferences.Editor editor ;
 
     private static final String TAG = "ResistrationSupplierAct";
 
@@ -64,7 +69,7 @@ public class ResistrationSupplierActivity extends AppCompatActivity {
         mToolbaar=findViewById(R.id.toolbar);
         setSupportActionBar(mToolbaar);
 
-        getSupportActionBar().setTitle("Welcome to COVID-19 CRID DAM");
+        getSupportActionBar().setTitle("COVID-19 CRID DAM");
         btn_cancel=findViewById(R.id.btn_cancel);
         btn_submit=findViewById(R.id.btn_submit);
 
@@ -179,6 +184,17 @@ public class ResistrationSupplierActivity extends AppCompatActivity {
                             Toast.makeText(ResistrationSupplierActivity.this, "Mobile number 01762957422 already exists in server.", Toast.LENGTH_SHORT).show();
                             edt_mobile.setError("User exist");
                         } else {
+
+                            pref = ResistrationSupplierActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+                            editor = pref.edit();
+                            editor.putString("loginstatus", "success"); // Storing string
+                            editor.putString("mobile",mobile);
+                            editor.putString("type","Supplier");
+                            editor.putString("email",email);
+                            editor.putString("location",location);
+                            editor.putString("name",name);
+                            editor.putString("pass",password);
+                            editor.commit();
                             mdialog.dismiss();
                             Toast.makeText(ResistrationSupplierActivity.this, "Data saved successfully", Toast.LENGTH_SHORT).show();
                             startActivity(new Intent(getApplicationContext(),Submissio_completeActivity.class).putExtra("type","supplier").putExtra("mobile",mobile));
@@ -230,5 +246,9 @@ public class ResistrationSupplierActivity extends AppCompatActivity {
         });
 
     }*/
+
+
+
+
 
 }

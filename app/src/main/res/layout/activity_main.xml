@@ -107,7 +107,6 @@
                 android:textColor="@android:color/white"
                 android:id="@+id/btn_previous"
                 android:layout_marginRight="10dp"
-                android:drawableLeft="@drawable/ic_chevron"
 
                 />
             <Button

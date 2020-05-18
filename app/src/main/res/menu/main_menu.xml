@@ -7,6 +7,9 @@
     <item android:id="@+id/logout"
         android:title="Logout"
         app:showAsAction="never"/>
+    <item android:id="@+id/list"
+        android:title="View my list"
+        app:showAsAction="never"/>
 
 
 </menu>

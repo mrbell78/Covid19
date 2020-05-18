@@ -9,8 +9,7 @@
     tools:context=".activity.SignsuppliActivity">
 
 
-    include layout="@layout/maintoolbar"
-    />
+    <include layout="@layout/maintoolbar"/>
 
     <ImageView
         android:layout_width="150dp"
@@ -157,6 +156,8 @@
             android:text="Remember me"
             android:layout_marginLeft="15dp"
             android:id="@+id/remember"
+            android:visibility="invisible"
+
             />
         <Button
             android:layout_width="0dp"

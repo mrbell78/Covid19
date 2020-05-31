@@ -37,11 +37,11 @@ public class Doctororderend  extends Fragment {
 
         View view = LayoutInflater.from(getContext()).inflate(R.layout.doctororderend,container,false);
 
-        btn_next=view.findViewById(R.id.btn_add);
+       /* btn_next=view.findViewById(R.id.btn_add);
         btn_previous=view.findViewById(R.id.btn_previous);
 
         edt_item=view.findViewById(R.id.edt_item);
-
+*/
         return view;
     }
 
@@ -51,7 +51,7 @@ public class Doctororderend  extends Fragment {
         super.onActivityCreated(savedInstanceState);
 
 
-        Intent i  = getActivity().getIntent();
+       /* Intent i  = getActivity().getIntent();
         type = i.getStringExtra("doc");
         Log.d("TAG", "onCreate: ...........what u need activity............the user type "+ type);
 
@@ -89,7 +89,7 @@ public class Doctororderend  extends Fragment {
             public void onClick(View v) {
                 getActivity().finish();
             }
-        });
+        });*/
 
     }
 

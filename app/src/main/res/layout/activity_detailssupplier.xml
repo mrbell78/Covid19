@@ -11,7 +11,7 @@
         android:id="@+id/ftoolbar"
         />
 
-    <LinearLayout
+    <!--<LinearLayout
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:weightSum="3"
@@ -44,14 +44,22 @@
             android:src="@drawable/pp"
             android:id="@+id/img3"/>
 
-    </LinearLayout>
+    </LinearLayout>-->
 
+
+    <ImageView
+        android:layout_width="match_parent"
+        android:layout_height="230dp"
+        android:id="@+id/img_mainid"
+        android:scaleType="fitCenter"
+        android:layout_marginTop="10dp"
+        android:layout_below="@+id/ftoolbar"/>
 
     <androidx.core.widget.NestedScrollView
         android:layout_width="match_parent"
         android:layout_height="wrap_content"
         android:id="@+id/scrollView"
-        android:layout_below="@+id/imgholder">
+        android:layout_below="@+id/img_mainid">
 
 
         <LinearLayout
@@ -117,6 +125,36 @@
                     android:id="@+id/brand_id"/>
 
             </LinearLayout>
+
+            <LinearLayout
+                android:layout_width="match_parent"
+                android:layout_height="wrap_content"
+                android:orientation="horizontal"
+                android:layout_marginTop="5dp"
+                android:weightSum="4">
+
+
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_weight="1"
+                    android:layout_height="wrap_content"
+                    android:textSize="18sp"
+                    android:text="Area"
+
+                    android:paddingLeft="5dp"
+                    android:textStyle="bold"/>
+                <TextView
+                    android:layout_width="0dp"
+                    android:layout_height="wrap_content"
+                    android:layout_weight="3"
+                    android:textStyle="normal"
+                    android:textSize="17sp"
+                    android:text="Mask ppe"
+                    android:id="@+id/area_id"/>
+
+            </LinearLayout>
+
+
 
 
 

@@ -101,4 +101,55 @@ public class SupplierActivity extends AppCompatActivity  {
 
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(Menu menu) {
+
+        //MenuInflater inflater = getMenuInflater();
+
+        getMenuInflater().inflate(R.menu.main_menu,menu);
+
+
+        return true;
+    }
+
+
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+
+
+
+
+        switch (item.getItemId()){
+            case R.id.logout:
+
+
+              /*  if(item.getTitle().equals("Login")){
+                    login();
+                }else {
+                    logout();
+                }*/
+                return true;
+            case R.id.list:
+
+                startActivity(new Intent(getApplicationContext(),MyProductActivity.class));
+
+                /*pref = MainActivity.this.getSharedPreferences("MyPref", 0); // 0 - for private mode
+
+                loginstaus = pref.getString("loginstatus", null);
+                if(loginstaus!=null){
+                    startActivity(new Intent(getApplicationContext(),DataEntryListctivity.class));
+                }else {
+                    Toast.makeText(this, "Please Login first ", Toast.LENGTH_SHORT).show();
+                }*/
+
+                return true;
+
+            default:
+                return false;
+
+        }
+
+    }
+
+
 }

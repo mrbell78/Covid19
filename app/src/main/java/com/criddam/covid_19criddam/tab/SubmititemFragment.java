@@ -52,8 +52,11 @@ import com.google.android.gms.tasks.Task;
 import com.google.firebase.auth.FirebaseAuth;
 import com.google.firebase.auth.FirebaseAuthSettings;
 import com.google.firebase.auth.FirebaseUser;
+import com.google.firebase.database.DataSnapshot;
+import com.google.firebase.database.DatabaseError;
 import com.google.firebase.database.DatabaseReference;
 import com.google.firebase.database.FirebaseDatabase;
+import com.google.firebase.database.ValueEventListener;
 import com.google.firebase.storage.FirebaseStorage;
 import com.google.firebase.storage.OnProgressListener;
 import com.google.firebase.storage.StorageReference;
@@ -112,7 +115,7 @@ public class SubmititemFragment extends Fragment {
     ImageView imgproduct;
     Button btn_takepic;
     Uri img_uri;
-    private byte[] thumbdata;
+
     List<Bitmap> bitmapslist;
     List<Uri>imageslist;
     LinearLayout llayout_defaultimage;
@@ -130,6 +133,16 @@ public class SubmititemFragment extends Fragment {
 
     FirebaseStorage storage;
     StorageReference storageReference;
+    int imagecounter =0;
+    FirebaseAuth mAuth;
+    DatabaseReference mDatabase;
+    FirebaseUser mUser;
+    String userId;
+
+    String phonenumber = null;
+    String name = null;
+
+    ProgressDialog mProgressdialog;
     public SubmititemFragment() {
         // Required empty public constructor
     }
@@ -166,6 +179,17 @@ public class SubmititemFragment extends Fragment {
 
         mStorage = FirebaseStorage.getInstance().getReference();
 
+        mAuth=FirebaseAuth.getInstance();
+        mUser=mAuth.getCurrentUser();
+        userId= mUser.getUid();
+        mProgressdialog=new ProgressDialog(getContext());
+        mDatabase= FirebaseDatabase.getInstance().getReference().child("User").child(userId);
+
+
+
+        Log.d("TAG", "onCreateView: ...........phone number "+ phonenumber);
+        Log.d("TAG", "onCreateView: ......................naem "+ name);
+
         removeall.setOnClickListener(new View.OnClickListener() {
             @Override
             public void onClick(View v) {
@@ -183,6 +207,8 @@ public class SubmititemFragment extends Fragment {
         return view;
     }
 
+
+
     @Override
     public void onActivityCreated(@Nullable Bundle savedInstanceState) {
         super.onActivityCreated(savedInstanceState);
@@ -193,19 +219,33 @@ public class SubmititemFragment extends Fragment {
             public void onClick(View v) {
 
 
-                if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M){
-                    if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
-                        ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
+                if(btn_takepic.getText().equals("Clear All")){
 
+                    bitmapslist=new ArrayList<>();
+                    llayout_defaultimage.setVisibility(View.INVISIBLE);
+                    imgproduct.setVisibility(View.VISIBLE);
+                    btn_takepic.setText("Add Image");
+
+                }else if(btn_takepic.getText().equals("Add Image")){
+
+                    if(Build.VERSION.SDK_INT>= Build.VERSION_CODES.M){
+                        if(ContextCompat.checkSelfPermission(getActivity(), Manifest.permission.READ_EXTERNAL_STORAGE)!= PackageManager.PERMISSION_GRANTED){
+                            ActivityCompat.requestPermissions(getActivity(),new String[]{Manifest.permission.READ_EXTERNAL_STORAGE},1);
+
+                        }else{
+                            BringImagePicker();
+
+                        }
                     }else{
                         BringImagePicker();
 
-                    }
-                }else{
-                    BringImagePicker();
 
+                    }
 
                 }
+
+
+
 
             }
         });
@@ -221,34 +261,9 @@ public class SubmititemFragment extends Fragment {
 
                     if(!TextUtils.isEmpty(edt_price.getText().toString()) && ! TextUtils.isEmpty(edt_name.getText().toString())){
 
-                        FirebaseUser mUser = FirebaseAuth.getInstance().getCurrentUser();
-                        String userid = mUser.getUid();
                         String currentTime = new SimpleDateFormat("HH:mm:ss", Locale.getDefault()).format(new Date());
-                        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("storeroom").child(userid+currentTime);
-                        HashMap productinfo = new HashMap();
 
-                        productinfo.put("pName",edt_name.getText().toString());
-                        productinfo.put("pDetails",edt_details.getText().toString());
-                        productinfo.put("pModel",edt_model.getText().toString());
-                        productinfo.put("pArea",edt_area.getText().toString());
-                        productinfo.put("pPrice",edt_price.getText().toString());
-                        productinfo.put("img1","default");
-                        productinfo.put("img2","default");
-                        productinfo.put("img3","default");
-                        productinfo.put("img4","default");
-
-                        databaseReference.updateChildren(productinfo).addOnCompleteListener(new OnCompleteListener() {
-                            @Override
-                            public void onComplete(@NonNull Task task) {
-                                if (task.isSuccessful()) {
-
-                                    Toast.makeText(getContext(), "Post successful", Toast.LENGTH_SHORT).show();
-                                    startActivity(new Intent(getContext(), MyProductActivity.class));
-                                    getActivity().finish();
-
-                                }
-                            }
-                            });
+                    uploadProduct(currentTime);
 
                     }else if(TextUtils.isEmpty(edt_price.getText().toString())){
 
@@ -257,6 +272,9 @@ public class SubmititemFragment extends Fragment {
                     }else if(TextUtils.isEmpty(edt_name.getText().toString())){
                         edt_name.setError("Must required filed");
                     }
+                }else {
+                    Toast.makeText(getActivity(), "no vlaid user found", Toast.LENGTH_SHORT).show();
+                    startActivity(new Intent(getActivity(),LoginActivity.class));
                 }
 
             }
@@ -266,6 +284,441 @@ public class SubmititemFragment extends Fragment {
 
 
     }
+
+    private void uploadProduct( String currentTime) {
+
+        FirebaseUser mUser = FirebaseAuth.getInstance().getCurrentUser();
+        String userid = mUser.getUid();
+
+
+        DatabaseReference databaseReference = FirebaseDatabase.getInstance().getReference().child("storeroom").child(userid);
+        HashMap productinfo = new HashMap();
+
+        productinfo.put("pName",edt_name.getText().toString());
+        productinfo.put("pDetails",edt_details.getText().toString());
+        productinfo.put("pModel",edt_model.getText().toString());
+        productinfo.put("pArea",edt_area.getText().toString());
+        productinfo.put("pPrice",edt_price.getText().toString());
+        productinfo.put("img1","default");
+        productinfo.put("img2","default");
+        productinfo.put("img3","default");
+        productinfo.put("img4","default");
+        productinfo.put("thum1","default");
+        productinfo.put("thum2","default");
+        productinfo.put("thum3","default");
+        productinfo.put("thum4","default");
+        productinfo.put("mobile","default");
+        productinfo.put("userName","default");
+
+
+
+
+        databaseReference.child("01762957451"+currentTime).updateChildren(productinfo).addOnCompleteListener(new OnCompleteListener() {
+            @Override
+            public void onComplete(@NonNull Task task) {
+                if (task.isSuccessful()) {
+
+                    DatabaseReference publicpost = FirebaseDatabase.getInstance().getReference().child("publicproduct");
+                    publicpost.child("01762957451"+currentTime).updateChildren(productinfo).addOnCompleteListener(new OnCompleteListener() {
+                        @Override
+                        public void onComplete(@NonNull Task task) {
+                            if(task.isSuccessful()){
+
+                                DatabaseReference databaseUser = FirebaseDatabase.getInstance().getReference().child("User").child(userid);
+
+
+                                databaseUser.addValueEventListener(new ValueEventListener() {
+                                    @Override
+                                    public void onDataChange(@NonNull DataSnapshot dataSnapshot) {
+
+                                        if(dataSnapshot.exists()){
+
+                                            String namelocal  = dataSnapshot.child("name").getValue().toString();
+                                            String phonenumberlocal= dataSnapshot.child("phone").getValue().toString();
+                                            HashMap updainfo = new HashMap();
+                                            updainfo.put("userName",namelocal);
+                                            updainfo.put("mobile",phonenumberlocal);
+
+                                            DatabaseReference productdatabase = FirebaseDatabase.getInstance().getReference().child("storeroom").child(userid).child("01762957451"+currentTime);
+                                            DatabaseReference publicproduct = FirebaseDatabase.getInstance().getReference().child("publicproduct").child("01762957451"+currentTime);
+                                            productdatabase.updateChildren(updainfo);
+                                            productdatabase.updateChildren(updainfo);
+
+                                            publicproduct.updateChildren(updainfo);
+                                            publicproduct.updateChildren(updainfo);
+
+
+                                        }
+                                    }
+
+                                    @Override
+                                    public void onCancelled(@NonNull DatabaseError databaseError) {
+
+                                    }
+                                });
+                                uploadimages(userid,currentTime);
+
+
+                            }
+                        }
+                    });
+
+                }
+            }
+        });
+
+    }
+
+    private void uploadimages(String userid,String currenttime) {
+
+        Toast.makeText(getContext(), "image metod is called", Toast.LENGTH_SHORT).show();
+        StorageReference Imagefolder = FirebaseStorage.getInstance().getReference().child("Imagesfolder");
+
+            new Thread(new Runnable() {
+                @Override
+                public void run() {
+                    int i=0;
+                    Log.d("TAG", "run: .................imagelist size "+ imageslist.size());
+
+                    if(imageslist.size()>4){
+
+                        for( i =0;i<4;i++){
+
+                            Uri singleiamge = imageslist.get(i);
+                            StorageReference Imagesname = Imagefolder.child("Image"+singleiamge.getLastPathSegment());
+                            StorageReference thumnail =Imagefolder.child("Allthumnail"+singleiamge.getLastPathSegment()+".jpg");
+
+
+
+                            Imagesname.putFile(singleiamge).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    Imagesname.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                        @Override
+                                        public void onSuccess(Uri uri) {
+
+                                            HashMap imagelink = new HashMap();
+
+                                            DatabaseReference mdatabase = FirebaseDatabase.getInstance().getReference().child("storeroom").child(userid);
+                                            DatabaseReference publicproduct = FirebaseDatabase.getInstance().getReference().child("publicproduct");
+
+                                            // imagelink.put("img1"+imagecounter,uri.toString());
+                                            Log.d("TAG", "onSuccess: ..................imagecounter index " + imagecounter);
+
+
+
+                                            if (imagecounter == 0) {
+
+                                                mdatabase.child("01762957451" + currenttime).child("img1").setValue(uri.toString());
+                                                publicproduct.child("01762957451" + currenttime).child("img1").setValue(uri.toString());
+
+                                                Bitmap bmp = null;
+                                                try {
+                                                    bmp = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), singleiamge);
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                                bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+                                                byte[] data = baos.toByteArray();
+
+                                                UploadTask uploadTask = thumnail.putBytes(data);
+                                                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            thumnail.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                                @Override
+                                                                public void onSuccess(Uri uri) {
+                                                                    mdatabase.child("01762957451" + currenttime).child("thum1").setValue(uri.toString());
+                                                                    publicproduct.child("01762957451" + currenttime).child("thum1").setValue(uri.toString());
+                                                                }
+                                                            });
+
+                                                        }
+                                                    }
+                                                });
+                                            }
+                                           else if (imagecounter == 1){
+                                                mdatabase.child("01762957451" + currenttime).child("img2").setValue(uri.toString());
+                                                publicproduct.child("01762957451"+currenttime).child("img2").setValue(uri.toString());
+
+                                                Bitmap bmp = null;
+                                                try {
+                                                    bmp = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), singleiamge);
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                                bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+                                                byte[] data = baos.toByteArray();
+
+                                                UploadTask uploadTask = thumnail.putBytes(data);
+                                                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            thumnail.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                                @Override
+                                                                public void onSuccess(Uri uri) {
+                                                                    mdatabase.child("01762957451" + currenttime).child("thum2").setValue(uri.toString());
+                                                                    publicproduct.child("01762957451" + currenttime).child("thum2").setValue(uri.toString());
+                                                                }
+                                                            });
+
+                                                        }
+                                                    }
+                                                });
+                                        }
+                                            else if(imagecounter==2){
+                                                mdatabase.child("01762957451"+currenttime).child("img3").setValue(uri.toString());
+                                                publicproduct.child("01762957451"+currenttime).child("img3").setValue(uri.toString());
+
+                                                Bitmap bmp = null;
+                                                try {
+                                                    bmp = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), singleiamge);
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                                bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+                                                byte[] data = baos.toByteArray();
+
+
+                                                UploadTask uploadTask = thumnail.putBytes(data);
+                                                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            thumnail.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                                @Override
+                                                                public void onSuccess(Uri uri) {
+                                                                    mdatabase.child("01762957451" + currenttime).child("thum3").setValue(uri.toString());
+                                                                    publicproduct.child("01762957451" + currenttime).child("thum3").setValue(uri.toString());
+                                                                }
+                                                            });
+
+                                                        }
+                                                    }
+                                                });
+                                            }
+
+                                            else if(imagecounter==3){
+                                                mdatabase.child("01762957451"+currenttime).child("img4").setValue(uri.toString());
+                                                publicproduct.child("01762957451"+currenttime).child("img4").setValue(uri.toString());
+
+
+                                                Bitmap bmp = null;
+                                                try {
+                                                    bmp = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), singleiamge);
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                                bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+                                                byte[] data = baos.toByteArray();
+
+                                                UploadTask uploadTask = thumnail.putBytes(data);
+                                                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            thumnail.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                                @Override
+                                                                public void onSuccess(Uri uri) {
+                                                                    mdatabase.child("01762957451" + currenttime).child("thum4").setValue(uri.toString());
+                                                                    publicproduct.child("01762957451" + currenttime).child("thum4").setValue(uri.toString());
+                                                                }
+                                                            });
+
+                                                        }
+                                                    }
+                                                });
+                                            }
+
+                                            imagecounter++;
+                                        }
+                                    });
+                                }
+                            });
+
+
+                        }
+                    }else if(imageslist.size()<=4){
+
+                        for( i =0;i<imageslist.size();i++){
+
+                            Uri singleiamge = imageslist.get(i);
+                            StorageReference Imagesname = Imagefolder.child("Image"+singleiamge.getLastPathSegment());
+                            StorageReference thumnail =Imagefolder.child("Allthumnail"+singleiamge.getLastPathSegment());
+                            Imagesname.putFile(singleiamge).addOnSuccessListener(new OnSuccessListener<UploadTask.TaskSnapshot>() {
+                                @Override
+                                public void onSuccess(UploadTask.TaskSnapshot taskSnapshot) {
+                                    Imagesname.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                        @Override
+                                        public void onSuccess(Uri uri) {
+
+                                            HashMap imagelink = new HashMap();
+
+                                            DatabaseReference mdatabase = FirebaseDatabase.getInstance().getReference().child("storeroom").child(userid);
+                                            DatabaseReference publicproduct = FirebaseDatabase.getInstance().getReference().child("publicproduct");
+
+                                            // imagelink.put("img1"+imagecounter,uri.toString());
+                                            Log.d("TAG", "onSuccess: ..................imagecounter index " + imagecounter);
+
+
+                                            if (imagecounter == 0) {
+
+                                                mdatabase.child("01762957451" + currenttime).child("img1").setValue(uri.toString());
+                                                publicproduct.child("01762957451" + currenttime).child("img1").setValue(uri.toString());
+
+
+                                                Bitmap bmp = null;
+                                                try {
+                                                    bmp = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), singleiamge);
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                                bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+                                                byte[] data = baos.toByteArray();
+
+                                                UploadTask uploadTask = thumnail.putBytes(data);
+                                                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            thumnail.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                                @Override
+                                                                public void onSuccess(Uri uri) {
+                                                                    mdatabase.child("01762957451" + currenttime).child("thum1").setValue(uri.toString());
+                                                                    publicproduct.child("01762957451" + currenttime).child("thum1").setValue(uri.toString());
+                                                                }
+                                                            });
+
+                                                        }
+                                                    }
+                                                });
+                                            } else if (imagecounter == 1){
+                                                mdatabase.child("01762957451" + currenttime).child("img2").setValue(uri.toString());
+                                                publicproduct.child("01762957451"+currenttime).child("img2").setValue(uri.toString());
+
+                                                Bitmap bmp = null;
+                                                try {
+                                                    bmp = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), singleiamge);
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                                bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+                                                byte[] data = baos.toByteArray();
+
+                                                UploadTask uploadTask = thumnail.putBytes(data);
+                                                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            thumnail.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                                @Override
+                                                                public void onSuccess(Uri uri) {
+                                                                    mdatabase.child("01762957451" + currenttime).child("thum2").setValue(uri.toString());
+                                                                    publicproduct.child("01762957451" + currenttime).child("thum2").setValue(uri.toString());
+                                                                }
+                                                            });
+
+                                                        }
+                                                    }
+                                                });
+
+                                            }
+                                            else if(imagecounter==2){
+                                                mdatabase.child("01762957451"+currenttime).child("img3").setValue(uri.toString());
+                                                publicproduct.child("01762957451"+currenttime).child("img3").setValue(uri.toString());
+
+                                                Bitmap bmp = null;
+                                                try {
+                                                    bmp = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), singleiamge);
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                                bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+                                                byte[] data = baos.toByteArray();
+
+                                                UploadTask uploadTask = thumnail.putBytes(data);
+                                                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            thumnail.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                                @Override
+                                                                public void onSuccess(Uri uri) {
+                                                                    mdatabase.child("01762957451" + currenttime).child("thum3").setValue(uri.toString());
+                                                                    publicproduct.child("01762957451" + currenttime).child("thum3").setValue(uri.toString());
+                                                                }
+                                                            });
+
+                                                        }
+                                                    }
+                                                });
+
+                                            }
+
+                                            else if(imagecounter==3){
+                                                mdatabase.child("01762957451"+currenttime).child("img4").setValue(uri.toString());
+                                                publicproduct.child("01762957451"+currenttime).child("img4").setValue(uri.toString());
+
+
+
+                                                Bitmap bmp = null;
+                                                try {
+                                                    bmp = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), singleiamge);
+                                                } catch (IOException e) {
+                                                    e.printStackTrace();
+                                                }
+                                                ByteArrayOutputStream baos = new ByteArrayOutputStream();
+                                                bmp.compress(Bitmap.CompressFormat.JPEG, 25, baos);
+                                                byte[] data = baos.toByteArray();
+
+                                                UploadTask uploadTask = thumnail.putBytes(data);
+                                                uploadTask.addOnCompleteListener(new OnCompleteListener<UploadTask.TaskSnapshot>() {
+                                                    @Override
+                                                    public void onComplete(@NonNull Task<UploadTask.TaskSnapshot> task) {
+                                                        if(task.isSuccessful()){
+                                                            thumnail.getDownloadUrl().addOnSuccessListener(new OnSuccessListener<Uri>() {
+                                                                @Override
+                                                                public void onSuccess(Uri uri) {
+                                                                    mdatabase.child("01762957451" + currenttime).child("thum4").setValue(uri.toString());
+                                                                    publicproduct.child("01762957451" + currenttime).child("thum4").setValue(uri.toString());
+                                                                }
+                                                            });
+
+                                                        }
+                                                    }
+                                                });
+                                            }
+
+                                            imagecounter++;
+                                        }
+                                    });
+                                }
+                            });
+
+
+                        }
+                    }
+
+                }
+            }).start();
+
+            startActivity(new Intent(getContext(),MyProductActivity.class));
+
+
+
+
+    }
+
+
 
 
     private Bitmap getbitmap(Uri singleimage) {
@@ -314,6 +767,7 @@ public class SubmititemFragment extends Fragment {
     }
 
 
+
     private void BringImagePicker() {
 
      /*   CropImage.activity()
@@ -343,6 +797,7 @@ public class SubmititemFragment extends Fragment {
     intent.setType("image/*");
 
         startActivityForResult(intent, 1);
+
 
 
 
@@ -394,7 +849,7 @@ public class SubmititemFragment extends Fragment {
         editor.putString("type",null);
         editor.commit();
         startActivity(new Intent(getContext(), SplashActivity.class));
-        getActivity().finish();
+
 
     }
 
@@ -415,117 +870,66 @@ public class SubmititemFragment extends Fragment {
 
 
 
-
-
-
-
-
-
-
-
-
     @Override
     public void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
-       /* if(requestCode == PICK_IMAGE_REQUEST && resultCode == RESULT_OK
-                && data != null && data.getData() != null )
-        {
-            filePath = data.getData();
-            llayout_defaultimage.setVisibility(View.VISIBLE);
-            removeall.setVisibility(View.VISIBLE);
-            imgproduct.setVisibility(View.INVISIBLE);
-            try {
-                Bitmap bitmap = MediaStore.Images.Media.getBitmap(getContext().getContentResolver(), filePath);
-                img1.setImageBitmap(bitmap);
-            }
-            catch (IOException e)
-            {
-                e.printStackTrace();
-            }
-        }*/
+
+        if(requestCode==1){
+
+             if(resultCode==RESULT_OK){
+
+                 if(data.getClipData()!=null)
+                 {
+
+                      llayout_defaultimage.setVisibility(View.VISIBLE);
+                      //removeall.setVisibility(View.VISIBLE);
+                      imgproduct.setVisibility(View.INVISIBLE);
+                      btn_takepic.setText("Clear All");
+                     imageslist=new ArrayList<>();
+                     bitmapslist=new ArrayList<>();
+                     int countClipdata = data.getClipData().getItemCount();
+                     Log.d("TAG", "onActivityResult: ..................clip datasize "+countClipdata);
+                     int i =0;
+                     while (i<countClipdata){
+
+                         img_uri = data.getClipData().getItemAt(i).getUri();
+
+                         imageslist.add(img_uri);
+
+
+                         i++;
+                     }
+
+                     for(int j =0 ; j<imageslist.size();j++){
+
+                         img1.setImageURI(imageslist.get(0));
+                         if(j==1)
+                             img2.setImageURI(imageslist.get(1));
+                         if(j==2)
+                             img3.setImageURI(imageslist.get(2));
+                         if(j==3)
+                             img4.setImageURI(imageslist.get(3));
+
+                     }
+
+
+                 }else {
+                     llayout_defaultimage.setVisibility(View.VISIBLE);
+                     //removeall.setVisibility(View.VISIBLE);
+                     imgproduct.setVisibility(View.INVISIBLE);
+                     btn_takepic.setText("Clear All");
+                     imageslist= new ArrayList<>();
+                     img_uri= data.getData();
+                     img1.setImageURI(img_uri);
+                     imageslist.add(img_uri);
+                     Log.d("TAG", "onActivityResult: ..............single image size of imagelist "+imageslist.size());
+                     Log.d("TAG", "onActivityResult: .........imaglist index is image  "+ imageslist.get(0));
+                 }
 
 
 
-         if (requestCode == 1) {
-
-
-            //List<Bitmap> bitmapslist = new ArrayList<>();
-            bitmapslist = new ArrayList<>();
-            imageslist = new ArrayList<>();
-            ClipData clipData = data.getClipData();
-            Uri localimaguri;
-
-
-            /*if (data.getClipData() != null) {
-
-                int countclipdata = data.getClipData().getItemCount();
-                int k = 0;
-                while (k < countclipdata) {
-
-                    img_uri = data.getClipData().getItemAt(k).getUri();
-                    imageslist.add(img_uri);
-                    k++;
-                }
-
-                //Picasso.with(getContext()).load(imageslist.get(1)).into(img1);
-                llayout_defaultimage.setVisibility(View.VISIBLE);
-                removeall.setVisibility(View.VISIBLE);
-                imgproduct.setVisibility(View.INVISIBLE);
-            }*/
-
-                if(clipData!= null){
-                    llayout_defaultimage.setVisibility(View.VISIBLE);
-                    removeall.setVisibility(View.VISIBLE);
-                    imgproduct.setVisibility(View.INVISIBLE);
-
-                    for(int i=0; i<clipData.getItemCount();i++){
-
-                        img_uri = clipData.getItemAt(i).getUri();
-                        localimaguri=data.getClipData().getItemAt(i).getUri();
-                        imageslist.add(localimaguri);
-                        try {
-                            InputStream is = getContext().getContentResolver().openInputStream(img_uri);
-                            Bitmap bitmap = BitmapFactory.decodeStream(is);
-                            bitmapslist.add(bitmap);
-
-                        } catch (FileNotFoundException e) {
-                            e.printStackTrace();
-                        }
-                    }
-
-                    for (int j = 1; j<bitmapslist.size();j++){
-
-                        img1.setImageBitmap(bitmapslist.get(1));
-                        if(j==2)
-                            img1.setImageBitmap(bitmapslist.get(2));
-                        if(j==3)
-                            img2.setImageBitmap(bitmapslist.get(3));
-                        if(j==4)
-                            img3.setImageBitmap(bitmapslist.get(4));
-
-                    }
-
-
-                }else {
-                    llayout_defaultimage.setVisibility(View.VISIBLE);
-                    removeall.setVisibility(View.VISIBLE);
-                    imgproduct.setVisibility(View.INVISIBLE);
-                    img_uri = data.getData();
-                    try {
-                        InputStream is = getContext().getContentResolver().openInputStream(img_uri);
-                        Bitmap bitmap = BitmapFactory.decodeStream(is);
-                        bitmapslist.add(bitmap);
-                        img1.setImageBitmap(bitmap);
-
-                    } catch (FileNotFoundException e) {
-                        e.printStackTrace();
-                    }
-                }
+             }
         }
-
-
-
-
     }
 
 
@@ -569,4 +973,14 @@ public class SubmititemFragment extends Fragment {
     }*/
 
 
+    @Override
+    public void onAttach(@NonNull Context context) {
+        super.onAttach(context);
+
+       if(imageslist!=null){
+           imageslist.clear();
+           bitmapslist.clear();
+       }
+        Toast.makeText(context, "on attatch is called", Toast.LENGTH_SHORT).show();
+    }
 }
